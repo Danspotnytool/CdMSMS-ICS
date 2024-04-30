@@ -46,7 +46,7 @@ Public Class BSCpE_SetupData
         Dim FacultyInput As New FileInputPanel With {
             .Label = "Faculty",
             .Description = "Upload .csv file of faculty.",
-            .Format = "facultyID, name, email"
+            .Format = "facultyID, firstName, lastName"
         }
         Me.FormPanel.Controls.Add(FacultyInput)
 
@@ -60,7 +60,7 @@ Public Class BSCpE_SetupData
         Dim StudentsInput As New FileInputPanel With {
             .Label = "Students",
             .Description = "Upload .csv file of students.",
-            .Format = "studentID, name, section, courses"
+            .Format = "studentID, firstName, lastName, section, courses, regular"
         }
         Me.FormPanel.Controls.Add(StudentsInput)
 
