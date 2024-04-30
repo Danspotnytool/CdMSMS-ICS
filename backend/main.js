@@ -24,12 +24,12 @@ connection.query('USE cdmsms_ics', (err) => {
 });
 
 // Database Structure
-// Tables: admins, courses, faculties, facilities, students, schedules
-// courses: courseCode: VARCHAR(10), description: TEXT, units: INT
-// faculties: facultyID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), email: VARCHAR(50), password: VARCHAR(50), courses: TEXT, schedules: TEXT
-// facilities: facilityID: VARCHAR(10), name: VARCHAR(50), description: TEXT, schedules: TEXT
-// students: studentID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), courses: TEXT, regular: BOOLEAN, email: VARCHAR(50), password: VARCHAR(50), schedules: TEXT
-// schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME
+// 	Tables: admins, courses, faculties, facilities, students, schedules
+// 		courses: courseCode: VARCHAR(10), description: TEXT, units: INT
+// 		faculties: facultyID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), email: VARCHAR(50), password: VARCHAR(50), courses: TEXT, schedules: TEXT
+// 		facilities: facilityID: VARCHAR(10), name: VARCHAR(50), description: TEXT, schedules: TEXT
+// 		students: studentID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), courses: TEXT, regular: BOOLEAN, email: VARCHAR(50), password: VARCHAR(50), schedules: TEXT
+// 		schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME
 connection.query('CREATE TABLE IF NOT EXISTS courses (courseCode VARCHAR(10), description TEXT, units INT)', (err) => {
 	if (err) throw err;
 	console.log('\tCreated Table: courses');
