@@ -37,6 +37,9 @@ Public Class BaseForm
     End Sub
 
     Protected Sub BaseForm_Load(sender As Object, e As EventArgs) Handles Me.Load
+        InitializeComponent()
+        SetStyle(ControlStyles.SupportsTransparentBackColor, True)
+
         Me.BackColor = Globals.Palette("White")
         Me.ForeColor = Globals.Palette("Secondary")
         Me.MinimumSize = Globals.MinimumFormSize

@@ -1,4 +1,7 @@
-﻿Imports System.Resources
+﻿Imports System.IO
+Imports System.Net
+Imports System.Resources
+Imports System.Text.RegularExpressions
 Imports Svg
 
 Public Class BSIT_ProgramHeadSetup
@@ -35,7 +38,7 @@ Public Class BSIT_ProgramHeadSetup
         Me.FormPanel.Controls.Add(Logo)
 
         Dim Intro As New Transparent.Label With {
-            .Text = "Continue by registering the BSIT Program head.",
+            .Text = "Continue by registering the BSIT Program Head.",
             .MaximumSize = New Size(Me.FormPanel.Width, 0),
             .MinimumSize = New Size(Me.FormPanel.Width, 0),
             .AutoSize = True,
@@ -45,11 +48,22 @@ Public Class BSIT_ProgramHeadSetup
         }
         Me.FormPanel.Controls.Add(Intro)
 
-        Dim NameInput As New BaseTextInput With {
-            .Name = "Name",
+        Dim NamePanel As New Transparent.Panel With {
             .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
         }
-        Me.FormPanel.Controls.Add(NameInput)
+        Me.FormPanel.Controls.Add(NamePanel)
+        Dim FirstNameInput As New BaseTextInput With {
+            .Name = "First Name",
+            .Size = New Size((NamePanel.Width / 2) - Globals.Unit(0.25), Globals.Unit(1))
+        }
+        FirstNameInput.Location = New Point(0, 0)
+        NamePanel.Controls.Add(FirstNameInput)
+        Dim LastNameInput As New BaseTextInput With {
+            .Name = "Last Name",
+            .Size = New Size((NamePanel.Width / 2) - Globals.Unit(0.25), Globals.Unit(1))
+        }
+        LastNameInput.Location = New Point(NamePanel.Width - LastNameInput.Width, 0)
+        NamePanel.Controls.Add(LastNameInput)
         Dim EmailInput As New BaseTextInput With {
             .Name = "Email",
             .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
@@ -74,7 +88,72 @@ Public Class BSIT_ProgramHeadSetup
         }
         Me.FormPanel.Controls.Add(ContinueButton)
         AddHandler ContinueButton.Click, Sub()
-                                             Me.GoToForm(New BSIT_SetupData)
+                                             If FirstNameInput.Text = "" And FirstNameInput.Text.Length < 3 Then
+                                                 Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "First Name must be at least 3 characters."
+                                                 }
+                                                 Modal.ShowDialog()
+                                                 FirstNameInput.Alert()
+                                                 Exit Sub
+                                             End If
+                                             If LastNameInput.Text = "" And LastNameInput.Text.Length < 2 Then
+                                                 Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Last Name must be at least 2 characters."
+                                                 }
+                                                 Modal.ShowDialog()
+                                                 LastNameInput.Alert()
+                                                 Exit Sub
+                                             End If
+                                             If EmailInput.Text = "" And Not New Regex("^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").IsMatch(EmailInput.Text) Then
+                                                 Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Invalid email address."
+                                                 }
+                                                 Modal.ShowDialog()
+                                                 EmailInput.Alert()
+                                                 Exit Sub
+                                             End If
+                                             If PasswordInput.Text = "" And PasswordInput.Text.Length < 8 Then
+                                                 Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Password must be at least 8 characters."
+                                                 }
+                                                 Modal.ShowDialog()
+                                                 PasswordInput.Alert()
+                                                 Exit Sub
+                                             End If
+                                             If PasswordInput.Text <> ConfirmPasswordInput.Text Then
+                                                 Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Passwords do not match."
+                                                 }
+                                                 Modal.ShowDialog()
+                                                 ConfirmPasswordInput.Alert()
+                                                 Exit Sub
+                                             End If
+
+                                             Dim data As New Dictionary(Of String, String) From {
+                                                  {"firstName", FirstNameInput.Text},
+                                                  {"lastName", LastNameInput.Text},
+                                                  {"email", EmailInput.Text},
+                                                  {"password", PasswordInput.Text},
+                                                  {"role", "bsit"}
+                                              }
+                                             Try
+                                                 Dim response As String = Globals.API("POST", "setup/admin", Globals.DictionaryToJSON(data))
+                                                 Me.GoToForm(New BSIT_SetupData)
+                                             Catch ex As WebException
+                                                 Dim rep As HttpWebResponse = ex.Response
+                                                 Using rdr As New StreamReader(rep.GetResponseStream())
+                                                     Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
+                                                  }
+                                                     Modal.ShowDialog()
+                                                 End Using
+                                             End Try
                                          End Sub
 
 
@@ -122,7 +201,7 @@ Public Class BSIT_ProgramHeadSetup
 
 
             Dim Background As New Bitmap(Me.Contents.Width, Me.Contents.Height)
-            Dim SetupGraphics = Globals.LoadSvgFromResource("Setup Graphics").Draw()
+            Dim SetupGraphics = Globals.LoadSvgFromResource("BSIT Setup Graphics").Draw()
             Dim HalfTrapezoid = Globals.LoadSvgFromResource("Half Trapezoid").Draw()
             Dim BarCompliment_Top = Globals.LoadSvgFromResource("Bar Complement").Draw()
             Dim Bar_Top = Globals.LoadSvgFromResource("Bar").Draw()
