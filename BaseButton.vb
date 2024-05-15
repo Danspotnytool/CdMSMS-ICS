@@ -12,14 +12,22 @@ Public Class BaseButton
         Me.FlatStyle = FlatStyle.Flat
         Me.FlatAppearance.BorderSize = 0
         Me.FlatAppearance.BorderColor = Nothing
-        Me.FlatAppearance.MouseOverBackColor = Globals.Palette("Primary")
-        Me.FlatAppearance.MouseDownBackColor = Globals.Palette("Primary")
+        Me.FlatAppearance.MouseOverBackColor = Globals.Palette("Plain Dark")
+        Me.FlatAppearance.MouseDownBackColor = Globals.Palette("Plain Dark")
 
         Me.MinimumSize = New Size(0, Globals.Unit(1))
         Me.MaximumSize = New Size(0, Globals.Unit(1))
         Me.Padding = New Padding(Globals.Unit(0.5), 0, Globals.Unit(0.5), 0)
         Me.Size = New Size(Globals.Unit(3), Globals.Unit(1))
         Me.AutoSize = True
+    End Sub
+
+
+    Protected Sub BaseButton_GotFocus(sender As Object, e As EventArgs) Handles Me.GotFocus
+        Me.BackColor = Globals.Palette("Plain Dark")
+    End Sub
+    Protected Sub BaseButton_LostFocus(sender As Object, e As EventArgs) Handles Me.LostFocus
+        Me.BackColor = Globals.Palette("Secondary")
     End Sub
 
     Protected Overrides Sub OnPaint(e As PaintEventArgs)

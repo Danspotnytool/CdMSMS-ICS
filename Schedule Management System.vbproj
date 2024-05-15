@@ -99,6 +99,9 @@
     <Compile Include="BaseFileInput.vb">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="BaseModal.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="BSCpE_ProgramHeadSetup.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -109,6 +112,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BSIT_SetupData.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dashboard.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="DeanSetup.Designer.vb">
@@ -137,6 +143,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Globals.vb" />
+    <Compile Include="Login.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -255,6 +264,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
+    <None Include="Resources\BSIT Setup Graphics.svg" />
+    <None Include="Resources\BSCpE Setup Graphics.svg" />
+    <None Include="Resources\File Input Icon Alerted.svg" />
     <None Include="Resources\Icon.ico" />
     <None Include="Resources\Icon.png" />
   </ItemGroup>

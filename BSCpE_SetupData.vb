@@ -1,5 +1,7 @@
 ﻿Imports System.Resources
 Imports Svg
+Imports System.IO
+Imports System.Net
 
 Public Class BSCpE_SetupData
     Inherits BaseForm
@@ -39,16 +41,16 @@ Public Class BSCpE_SetupData
         Dim CoursesInput As New FileInputPanel With {
             .Label = "Courses",
             .Description = "Upload .csv file of courses.",
-            .Format = "courseCode, description, units"
+            .Format = "courseCode, description, units, yearLevel"
         }
         Me.FormPanel.Controls.Add(CoursesInput)
 
-        Dim FacultyInput As New FileInputPanel With {
-            .Label = "Faculty",
-            .Description = "Upload .csv file of faculty.",
-            .Format = "facultyID, firstName, lastName"
+        Dim FacultiesInput As New FileInputPanel With {
+            .Label = "Faculties",
+            .Description = "Upload .csv file of faculties.",
+            .Format = "facultiesID, firstName, lastName"
         }
-        Me.FormPanel.Controls.Add(FacultyInput)
+        Me.FormPanel.Controls.Add(FacultiesInput)
 
         Dim FacilitiesInput As New FileInputPanel With {
             .Label = "Facilities",
@@ -60,7 +62,7 @@ Public Class BSCpE_SetupData
         Dim StudentsInput As New FileInputPanel With {
             .Label = "Students",
             .Description = "Upload .csv file of students.",
-            .Format = "studentID, firstName, lastName, section, courses, regular"
+            .Format = "studentID, firstName, lastName, section, courses, regularity"
         }
         Me.FormPanel.Controls.Add(StudentsInput)
 
@@ -94,6 +96,105 @@ Public Class BSCpE_SetupData
             Me.FormPanel.Bottom + Globals.Unit(1)
         )
         AddHandler SubmitButton.Click, Sub()
+                                           Dim Data As New Dictionary(Of String, String)
+                                           If CoursesInput.FilePath = "" Then
+                                               Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Please upload a .csv file for courses."
+                                                }
+                                               Modal.ShowDialog()
+                                               CoursesInput.Alert()
+                                               Exit Sub
+                                           Else
+                                               Try
+                                                   Data.Add("courses", File.ReadAllText(CoursesInput.FilePath))
+                                               Catch ex As Exception
+                                                   Dim Modal As New BaseModal With {
+                                                        .Title = "Error",
+                                                        .Message = ex.Message
+                                                    }
+                                                   Modal.ShowDialog()
+                                                   CoursesInput.Alert()
+                                                   Exit Sub
+                                               End Try
+                                           End If
+                                           If FacultiesInput.FilePath = "" Then
+                                               Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Please upload a .csv file for faculties."
+                                                }
+                                               Modal.ShowDialog()
+                                               FacultiesInput.Alert()
+                                               Exit Sub
+                                           Else
+                                               Try
+                                                   Data.Add("faculties", File.ReadAllText(FacultiesInput.FilePath))
+                                               Catch ex As Exception
+                                                   Dim Modal As New BaseModal With {
+                                                        .Title = "Error",
+                                                        .Message = ex.Message
+                                                    }
+                                                   Modal.ShowDialog()
+                                                   FacultiesInput.Alert()
+                                                   Exit Sub
+                                               End Try
+                                           End If
+                                           If FacilitiesInput.FilePath = "" Then
+                                               Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Please upload a .csv file for facilities."
+                                                }
+                                               Modal.ShowDialog()
+                                               FacilitiesInput.Alert()
+                                               Exit Sub
+                                           Else
+                                               Try
+                                                   Data.Add("facilities", File.ReadAllText(FacilitiesInput.FilePath))
+                                               Catch ex As Exception
+                                                   Dim Modal As New BaseModal With {
+                                                        .Title = "Error",
+                                                        .Message = ex.Message
+                                                    }
+                                                   Modal.ShowDialog()
+                                                   FacilitiesInput.Alert()
+                                                   Exit Sub
+                                               End Try
+                                           End If
+                                           If StudentsInput.FilePath = "" Then
+                                               Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Please upload a .csv file for students."
+                                                }
+                                               Modal.ShowDialog()
+                                               StudentsInput.Alert()
+                                               Exit Sub
+                                           Else
+                                               Try
+                                                   Data.Add("students", File.ReadAllText(StudentsInput.FilePath))
+                                               Catch ex As Exception
+                                                   Dim Modal As New BaseModal With {
+                                                           .Title = "Error",
+                                                           .Message = ex.Message
+                                                        }
+                                                   Modal.ShowDialog()
+                                                   StudentsInput.Alert()
+                                                   Exit Sub
+                                               End Try
+                                           End If
+                                           Data.Add("program", "bscpe")
+                                           Try
+                                               Dim response As String = Globals.API("POST", "setup/program", Globals.DictionaryToJSON(Data))
+                                               Me.GoToForm(New Login)
+                                           Catch ex As WebException
+                                               Dim rep As HttpWebResponse = ex.Response
+                                               Using rdr As New StreamReader(rep.GetResponseStream())
+                                                   Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
+                                                  }
+                                                   Modal.ShowDialog()
+                                               End Using
+                                           End Try
                                        End Sub
         Me.Contents.Controls.Add(SubmitButton)
 
@@ -199,14 +300,16 @@ Public Class BSCpE_SetupData
             End Set
         End Property
 
+        Public FilePath As String
+
         Public Sub New()
             Me.AutoSize = True
 
             Dim Label As New Transparent.Label With {
                 .Text = "File",
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(1)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(1)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(1.25)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(1.25)),
                 .Location = New Point(0, 0),
                 .Font = Globals.GetFont("Raleway", Globals.Unit(0.75), FontStyle.Bold),
                 .ForeColor = Globals.Palette("Secondary"),
@@ -218,8 +321,8 @@ Public Class BSCpE_SetupData
             Dim Description As New Transparent.Label With {
                 .Text = "Upload .csv file of courses.",
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(0.5)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(0.5)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(0.75)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(0.75)),
                 .Location = New Point(0, Globals.Unit(1.5)),
                 .Font = Globals.GetFont("Open Sans", Globals.Unit(0.5), FontStyle.Regular),
                 .ForeColor = Globals.Palette("Plain Dark"),
@@ -231,8 +334,8 @@ Public Class BSCpE_SetupData
             Dim FormatLabel As New Transparent.Label With {
                 .Text = "Format:",
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(0.5)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(0.5)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(0.75)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(0.75)),
                 .Location = New Point(0, Globals.Unit(2.5)),
                 .Font = Globals.GetFont("Raleway", Globals.Unit(0.5), FontStyle.Bold),
                 .ForeColor = Globals.Palette("Secondary"),
@@ -243,8 +346,8 @@ Public Class BSCpE_SetupData
             Dim FormatDescription As New Transparent.Label With {
                 .Text = "Course Code, Course Title, Course Description, Course Units",
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(0.5)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(0.5)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(0.75)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(0.75)),
                 .Location = New Point(0, Globals.Unit(3)),
                 .Font = Globals.GetFont("Open Sans", Globals.Unit(0.5), FontStyle.Regular),
                 .ForeColor = Globals.Palette("Plain Dark"),
@@ -255,12 +358,15 @@ Public Class BSCpE_SetupData
 
             Dim FileInput As New BaseFileInput With {
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(4)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(4)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(3)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(3)),
                 .Location = New Point(0, Globals.Unit(4)),
                 .Name = "FileInput"
             }
             Me.Controls.Add(FileInput)
+            AddHandler FileInput.FileSelected, Sub()
+                                                   Me.FilePath = FileInput.FilePath
+                                               End Sub
         End Sub
 
         Protected Sub FileInputPanel_Resize(sender As Object, e As EventArgs) Handles Me.Resize
@@ -268,6 +374,11 @@ Public Class BSCpE_SetupData
                 Control.MinimumSize = New Size(Me.Width, Control.MaximumSize.Height)
                 Control.MaximumSize = New Size(Me.Width, Control.MaximumSize.Height)
             Next
+        End Sub
+
+        Public Sub Alert()
+            Dim FileInput As BaseFileInput = Me.Controls("FileInput")
+            FileInput.Alert()
         End Sub
     End Class
 End Class

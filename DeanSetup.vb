@@ -1,4 +1,7 @@
-﻿Imports System.Resources
+﻿Imports System.IO
+Imports System.Net
+Imports System.Resources
+Imports System.Text.RegularExpressions
 Imports Svg
 
 Public Class DeanSetup
@@ -45,11 +48,21 @@ Public Class DeanSetup
         }
         Me.FormPanel.Controls.Add(Intro)
 
-        Dim NameInput As New BaseTextInput With {
-            .Name = "Name",
+        Dim NamePanel As New Transparent.Panel With {
             .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
         }
-        Me.FormPanel.Controls.Add(NameInput)
+        Me.FormPanel.Controls.Add(NamePanel)
+        Dim FirstNameInput As New BaseTextInput With {
+            .Name = "First Name",
+            .Size = New Size((NamePanel.Width / 2) - Globals.Unit(0.25), Globals.Unit(1))
+        }
+        NamePanel.Controls.Add(FirstNameInput)
+        Dim LastNameInput As New BaseTextInput With {
+            .Name = "Last Name",
+            .Size = New Size((NamePanel.Width / 2) - Globals.Unit(0.25), Globals.Unit(1))
+        }
+        LastNameInput.Location = New Point(NamePanel.Width - LastNameInput.Width, 0)
+        NamePanel.Controls.Add(LastNameInput)
         Dim EmailInput As New BaseTextInput With {
             .Name = "Email",
             .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
@@ -74,13 +87,91 @@ Public Class DeanSetup
         }
         Me.FormPanel.Controls.Add(SetupButton)
         AddHandler SetupButton.Click, Sub()
-                                          Me.GoToForm(New BSIT_ProgramHeadSetup)
+                                          If FirstNameInput.Text = "" And FirstNameInput.Text.Length < 3 Then
+                                              FirstNameInput.Alert()
+                                              Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "First Name must be at least 3 characters."
+                                              }
+                                              Modal.ShowDialog()
+                                              Exit Sub
+                                          End If
+                                          If LastNameInput.Text = "" And LastNameInput.Text.Length < 2 Then
+                                              LastNameInput.Alert()
+                                              Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Last Name must be at least 2 characters."
+                                              }
+                                              Modal.ShowDialog()
+                                              Exit Sub
+                                          End If
+                                          If EmailInput.Text = "" And Not New Regex("^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").IsMatch(EmailInput.Text) Then
+                                              EmailInput.Alert()
+                                              Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Invalid email address."
+                                              }
+                                              Modal.ShowDialog()
+                                              Exit Sub
+                                          End If
+                                          If PasswordInput.Text = "" And PasswordInput.Text.Length < 8 Then
+                                              PasswordInput.Alert()
+                                              Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Password must be at least 8 characters."
+                                              }
+                                              Modal.ShowDialog()
+                                              Exit Sub
+                                          End If
+                                          If PasswordInput.Text <> ConfirmPasswordInput.Text Then
+                                              ConfirmPasswordInput.Alert()
+                                              Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = "Passwords do not match."
+                                              }
+                                              Modal.ShowDialog()
+                                              Exit Sub
+                                          End If
+
+                                          Dim data As New Dictionary(Of String, String) From {
+                                              {"firstName", FirstNameInput.Text},
+                                              {"lastName", LastNameInput.Text},
+                                              {"email", EmailInput.Text},
+                                              {"password", PasswordInput.Text},
+                                              {"role", "dean"}
+                                          }
+                                          Try
+                                              Dim response As String = Globals.API("POST", "setup/admin", Globals.DictionaryToJSON(data))
+                                              Me.GoToForm(New BSIT_ProgramHeadSetup)
+                                          Catch ex As WebException
+                                              Dim rep As HttpWebResponse = ex.Response
+                                              Using rdr As New StreamReader(rep.GetResponseStream())
+                                                  Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
+                                                  }
+                                                  Modal.ShowDialog()
+                                              End Using
+                                          End Try
                                       End Sub
-
-
-
         Loaded = True
         Me.Size = Globals.FormSize
+
+        'Check if the system is already set up
+        Try
+            Dim response = Globals.API("GET", "setup", Nothing)
+            Dim Modal As New BaseModal With {
+                .Title = "System Setup",
+                .Message = "The system is already set up. Please log in.",
+                .Buttons = New Dictionary(Of String, DialogResult) From {
+                    {"OK", DialogResult.OK}
+                }
+            }
+            If Modal.ShowDialog() Then
+                Me.GoToForm(New Login)
+            End If
+        Catch ex As Exception
+        End Try
     End Sub
 
     Protected Sub DeanSetup_Resize(sender As Object, e As EventArgs) Handles Me.Resize

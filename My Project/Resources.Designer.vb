@@ -101,6 +101,26 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property BSCpE_Setup_Graphics() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("BSCpE Setup Graphics", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property BSIT_Setup_Graphics() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("BSIT Setup Graphics", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized resource of type System.Drawing.Bitmap.
         '''</summary>
         Friend ReadOnly Property CdMSMS_ICS_Logo() As System.Drawing.Bitmap
@@ -126,6 +146,16 @@ Namespace My.Resources
         Friend ReadOnly Property File_Input_Icon() As Byte()
             Get
                 Dim obj As Object = ResourceManager.GetObject("File Input Icon", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property File_Input_Icon_Alerted() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("File Input Icon Alerted", resourceCulture)
                 Return CType(obj,Byte())
             End Get
         End Property

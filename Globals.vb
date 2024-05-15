@@ -2,6 +2,9 @@
 Imports System.Drawing.Text
 Imports System.Drawing
 Imports System.Runtime.InteropServices
+Imports System.Net
+Imports System.IO
+Imports System.Text
 
 Module Globals
     Public Function HexToColor(hex As String) As Color
@@ -127,5 +130,53 @@ Module Globals
             Case Else
                 Return GetFont("Open Sans", size, style)
         End Select
+    End Function
+
+    Public Function Fetch(uri As String, method As String, Optional data As String = "") As String
+        Dim request As HttpWebRequest = WebRequest.Create(uri)
+        request.Method = method
+        Select Case method
+            Case "GET"
+                Dim response As HttpWebResponse = request.GetResponse()
+                Dim reader As New StreamReader(response.GetResponseStream())
+                Return reader.ReadToEnd()
+            Case "POST"
+                request.ContentType = "application/json"
+                Dim dataBytes As Byte() = Encoding.UTF8.GetBytes(data)
+                request.ContentLength = dataBytes.Length
+                Dim requestStream As Stream = request.GetRequestStream()
+                requestStream.Write(dataBytes, 0, dataBytes.Length)
+                requestStream.Close()
+                Dim response As HttpWebResponse = request.GetResponse()
+                Dim reader As New StreamReader(response.GetResponseStream())
+                Return reader.ReadToEnd()
+            Case "UPDATE"
+                request.Method = "PUT"
+                request.ContentType = "application/json"
+                Dim dataBytes As Byte() = Encoding.UTF8.GetBytes(data)
+                request.ContentLength = dataBytes.Length
+                Dim requestStream As Stream = request.GetRequestStream()
+                requestStream.Write(dataBytes, 0, dataBytes.Length)
+                requestStream.Close()
+                Dim response As HttpWebResponse = request.GetResponse()
+                Dim reader As New StreamReader(response.GetResponseStream())
+                Return reader.ReadToEnd()
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
+    Public Function API(method As String, path As String, Optional data As String = "") As String
+        Return Fetch("http://localhost:3090/api/" & path, method, data)
+    End Function
+
+    Public Function DictionaryToJSON(dictionary As Dictionary(Of String, String)) As String
+        Dim json As String = "{"
+        For Each item In dictionary
+            json &= $"{Chr(34)}{item.Key}{Chr(34)}: " & $"{Chr(34)}{ item.Value.Replace(Chr(34), "\" & Chr(34)).Replace(Environment.NewLine, "\n") }{Chr(34)},"
+        Next
+        json = json.TrimEnd(",")
+        json &= "}"
+        Return json
     End Function
 End Module
