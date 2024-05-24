@@ -7,6 +7,8 @@ Public Class BaseForm
     Public Sub New()
         InitializeComponent()
         SetStyle(ControlStyles.SupportsTransparentBackColor, True)
+
+        Me.ShowInTaskbar = False
     End Sub
 
 
@@ -37,9 +39,6 @@ Public Class BaseForm
     End Sub
 
     Protected Sub BaseForm_Load(sender As Object, e As EventArgs) Handles Me.Load
-        InitializeComponent()
-        SetStyle(ControlStyles.SupportsTransparentBackColor, True)
-
         Me.BackColor = Globals.Palette("White")
         Me.ForeColor = Globals.Palette("Secondary")
         Me.MinimumSize = Globals.MinimumFormSize
@@ -50,15 +49,14 @@ Public Class BaseForm
 
         Me.Icon = My.Resources.ResourceManager.GetObject("Icon")
 
-        Me.ShowInTaskbar = True
-
-        Dim HeaderBar As New Panel With {
+        Me.HeaderBar = New Panel With {
             .Dock = DockStyle.Top,
             .Height = Globals.Unit(1),
             .Cursor = Cursors.SizeAll,
-            .BackColor = Globals.Palette("Plain Light")
+            .BackColor = Globals.Palette("Plain Light"),
+            .Name = "HaderBar"
         }
-        Me.Controls.Add(HeaderBar)
+        Me.Controls.Add(Me.HeaderBar)
 
         Dim Title As New Label With {
             .Name = "titleLabel",
@@ -67,12 +65,12 @@ Public Class BaseForm
             .Text = "BaseForm",
             .Font = Globals.GetFont("Raleway", Globals.Unit(0.5), FontStyle.Bold),
             .ForeColor = Me.ForeColor,
-            .BackColor = HeaderBar.BackColor,
+            .BackColor = Me.HeaderBar.BackColor,
             .Padding = New Padding(0),
             .Margin = New Padding(0),
             .TextAlign = ContentAlignment.MiddleCenter
         }
-        HeaderBar.Controls.Add(Title)
+        Me.HeaderBar.Controls.Add(Title)
 
         Dim LogoBox As New FlowLayoutPanel With {
             .AutoSize = True,
@@ -114,9 +112,9 @@ Public Class BaseForm
             .Image = Globals.LoadSvgFromResource("Header Triangle TitleBox", New Size(Globals.Unit(1), Globals.Unit(1))).Draw()
         }
 
-        HeaderBar.Controls.Add(NameTriangle)
-        HeaderBar.Controls.Add(NameLabel)
-        HeaderBar.Controls.Add(LogoBox)
+        Me.HeaderBar.Controls.Add(NameTriangle)
+        Me.HeaderBar.Controls.Add(NameLabel)
+        Me.HeaderBar.Controls.Add(LogoBox)
 
         Dim ControlBox As New FlowLayoutPanel With {
             .Dock = DockStyle.Right,
@@ -151,6 +149,7 @@ Public Class BaseForm
         AddHandler SizeButton.Click, Sub()
                                          If Me.WindowState = FormWindowState.Maximized Then
                                              Me.WindowState = FormWindowState.Normal
+                                             Me.Size = Globals.FormSize
                                          Else
                                              Me.WindowState = FormWindowState.Maximized
                                          End If
@@ -192,64 +191,68 @@ Public Class BaseForm
             .Image = Globals.LoadSvgFromResource("Header Triangle ControlBox", New Size(Globals.Unit(1), Globals.Unit(1))).Draw()
         }
 
-        HeaderBar.Controls.Add(ControlBoxTriangle)
-        HeaderBar.Controls.Add(ControlBox)
+        Me.HeaderBar.Controls.Add(ControlBoxTriangle)
+        Me.HeaderBar.Controls.Add(ControlBox)
 
 
-        AddHandler HeaderBar.MouseDown, AddressOf HeaderBar_MouseDown
-        AddHandler HeaderBar.MouseMove, AddressOf HeaderBar_MouseMove
-        AddHandler HeaderBar.MouseUp, AddressOf HeaderBar_MouseUp
+        AddHandler Me.HeaderBar.MouseDown, AddressOf HeaderBar_MouseDown
+        AddHandler Me.HeaderBar.MouseMove, AddressOf HeaderBar_MouseMove
+        AddHandler Me.HeaderBar.MouseUp, AddressOf HeaderBar_MouseUp
 
 
-        Dim resizerBarTop As New Panel With {
+        Me.resizerBarTop = New Panel With {
             .Dock = DockStyle.Top,
             .Height = Globals.Unit(0.1),
             .Cursor = Cursors.SizeNS,
-            .BackColor = Me.ForeColor
+            .BackColor = Me.ForeColor,
+            .Name = "resizerBarTop"
         }
         Me.Controls.Add(resizerBarTop)
-        AddHandler resizerBarTop.MouseDown, AddressOf ResizerBarTop_MouseDown
-        AddHandler resizerBarTop.MouseMove, AddressOf ResizerBarTop_MouseMove
-        AddHandler resizerBarTop.MouseUp, AddressOf ResizerBarTop_MouseUp
-        Dim resizerBarBottom As New Panel With {
+        AddHandler Me.resizerBarTop.MouseDown, AddressOf ResizerBarTop_MouseDown
+        AddHandler Me.resizerBarTop.MouseMove, AddressOf ResizerBarTop_MouseMove
+        AddHandler Me.resizerBarTop.MouseUp, AddressOf ResizerBarTop_MouseUp
+        Me.resizerBarBottom = New Panel With {
             .Dock = DockStyle.Bottom,
             .Height = Globals.Unit(0.1),
             .Cursor = Cursors.SizeNS,
-            .BackColor = Me.ForeColor
+            .BackColor = Me.ForeColor,
+            .Name = "resizerBarBottom"
         }
         Me.Controls.Add(resizerBarBottom)
-        AddHandler resizerBarBottom.MouseDown, AddressOf ResizerBarBottom_MouseDown
-        AddHandler resizerBarBottom.MouseMove, AddressOf ResizerBarBottom_MouseMove
-        AddHandler resizerBarBottom.MouseUp, AddressOf ResizerBarBottom_MouseUp
+        AddHandler Me.resizerBarBottom.MouseDown, AddressOf ResizerBarBottom_MouseDown
+        AddHandler Me.resizerBarBottom.MouseMove, AddressOf ResizerBarBottom_MouseMove
+        AddHandler Me.resizerBarBottom.MouseUp, AddressOf ResizerBarBottom_MouseUp
 
-        Dim resizerBarLeft As New Panel With {
+        Me.resizerBarLeft = New Panel With {
             .Dock = DockStyle.Left,
             .Width = Globals.Unit(0.1),
             .Cursor = Cursors.SizeWE,
-            .BackColor = Me.ForeColor
+            .BackColor = Me.ForeColor,
+            .Name = "resizerBarLeft"
         }
         Me.Controls.Add(resizerBarLeft)
-        AddHandler resizerBarLeft.MouseDown, AddressOf ResizerBarLeft_MouseDown
-        AddHandler resizerBarLeft.MouseMove, AddressOf ResizerBarLeft_MouseMove
-        AddHandler resizerBarLeft.MouseUp, AddressOf ResizerBarLeft_MouseUp
-        Dim resizerBarRight As New Panel With {
+        AddHandler Me.resizerBarLeft.MouseDown, AddressOf ResizerBarLeft_MouseDown
+        AddHandler Me.resizerBarLeft.MouseMove, AddressOf ResizerBarLeft_MouseMove
+        AddHandler Me.resizerBarLeft.MouseUp, AddressOf ResizerBarLeft_MouseUp
+        Me.resizerBarRight = New Panel With {
             .Dock = DockStyle.Right,
             .Width = Globals.Unit(0.1),
             .Cursor = Cursors.SizeWE,
-            .BackColor = Me.ForeColor
+            .BackColor = Me.ForeColor,
+            .Name = "resizerBarRight"
         }
         Me.Controls.Add(resizerBarRight)
-        AddHandler resizerBarRight.MouseDown, AddressOf ResizerBarRight_MouseDown
-        AddHandler resizerBarRight.MouseMove, AddressOf ResizerBarRight_MouseMove
-        AddHandler resizerBarRight.MouseUp, AddressOf ResizerBarRight_MouseUp
+        AddHandler Me.resizerBarRight.MouseDown, AddressOf ResizerBarRight_MouseDown
+        AddHandler Me.resizerBarRight.MouseMove, AddressOf ResizerBarRight_MouseMove
+        AddHandler Me.resizerBarRight.MouseUp, AddressOf ResizerBarRight_MouseUp
 
 
 
         Me.Contents = New Panel With {
-            .Dock = Dock.Fill,
             .BackColor = Me.BackColor,
             .AutoScroll = True,
-            .BackgroundImageLayout = ImageLayout.Zoom
+            .BackgroundImageLayout = ImageLayout.Zoom,
+            .Dock = DockStyle.Fill
         }
         AddHandler Me.Resize, Sub()
                                   Me.Contents.BackgroundImage = BackgroundBitmap
@@ -262,11 +265,16 @@ Public Class BaseForm
 
         LoopChildrenAddMouseHeaderEvents(HeaderBar)
 
-        Me.ShowInTaskbar = False
         Me.ShowInTaskbar = True
     End Sub
 
     Public Contents As Panel
+
+    Public HeaderBar As Panel
+    Public resizerBarTop As Panel
+    Public resizerBarBottom As Panel
+    Public resizerBarLeft As Panel
+    Public resizerBarRight As Panel
 
     Private Sub LoopChildrenAddMouseHeaderEvents(Control As Control)
         AddHandler Control.MouseDown, AddressOf HeaderBar_MouseDown

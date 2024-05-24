@@ -5,6 +5,7 @@ Imports System.Runtime.InteropServices
 Imports System.Net
 Imports System.IO
 Imports System.Text
+Imports Newtonsoft.Json
 
 Module Globals
     Public Function HexToColor(hex As String) As Color
@@ -46,7 +47,7 @@ Module Globals
         Return 30 * units
     End Function
 
-    Public MinimumFormSize As New Size(Unit(20), Unit(20))
+    Public MinimumFormSize As New Size(Unit(25), Unit(20))
     Public FormSize As New Size(Unit(30), Unit(20))
     Public FormLocation As New Point(
         (Screen.PrimaryScreen.WorkingArea.Width - FormSize.Width) / 2,
@@ -132,8 +133,14 @@ Module Globals
         End Select
     End Function
 
-    Public Function Fetch(uri As String, method As String, Optional data As String = "") As String
+    Public TOKEN As String = Nothing
+    Public PROGRAM As String = "bsit"
+    Public Function Fetch(uri As String, method As String, Optional data As String = "{}") As String
         Dim request As HttpWebRequest = WebRequest.Create(uri)
+        If TOKEN IsNot Nothing Then
+            request.Headers.Add("Authorization: " & TOKEN)
+        End If
+
         request.Method = method
         Select Case method
             Case "GET"
@@ -166,7 +173,7 @@ Module Globals
         End Select
     End Function
 
-    Public Function API(method As String, path As String, Optional data As String = "") As String
+    Public Function API(method As String, path As String, Optional data As String = "{}") As String
         Return Fetch("http://localhost:3090/api/" & path, method, data)
     End Function
 
@@ -178,5 +185,21 @@ Module Globals
         json = json.TrimEnd(",")
         json &= "}"
         Return json
+    End Function
+
+    Public Function JSONToDictionary(json As String) As Dictionary(Of String, String)
+        Dim dictionary As New Dictionary(Of String, String)
+        Dim jsonItems As String() = json.Replace("{", "").Replace("}", "").Split(",")
+        For Each item In jsonItems
+            Dim key As String = item.Split(":")(0).Trim().Replace(Chr(34), "")
+            Dim value As String = item.Split(":")(1).Trim().Replace(Chr(34), "")
+            dictionary.Add(key, value)
+        Next
+        Return dictionary
+    End Function
+
+    Friend Function JSONToDictionary(json As String, recursive As Integer, Optional index As Integer = 0) As Dictionary(Of String, Object)
+        Dim dictionary As Dictionary(Of String, Object) = JsonConvert.DeserializeObject(Of Dictionary(Of String, Object))(json)
+        Return dictionary
     End Function
 End Module

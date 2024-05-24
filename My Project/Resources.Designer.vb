@@ -121,6 +121,26 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Calendar_Icon() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Calendar Icon", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Calendar_Icon_Active() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Calendar Icon Active", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
         '''  Looks up a localized resource of type System.Drawing.Bitmap.
         '''</summary>
         Friend ReadOnly Property CdMSMS_ICS_Logo() As System.Drawing.Bitmap
@@ -136,6 +156,36 @@ Namespace My.Resources
         Friend ReadOnly Property Close_Window() As Byte()
             Get
                 Dim obj As Object = ResourceManager.GetObject("Close Window", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Create_Icon() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Create Icon", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Create_Icon_Active() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Create Icon Active", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property DropDown_Arrow() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("DropDown Arrow", resourceCulture)
                 Return CType(obj,Byte())
             End Get
         End Property
@@ -246,6 +296,26 @@ Namespace My.Resources
         Friend ReadOnly Property Minimize_Window() As Byte()
             Get
                 Dim obj As Object = ResourceManager.GetObject("Minimize Window", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Notification_Icon() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Notification Icon", resourceCulture)
+                Return CType(obj,Byte())
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  Looks up a localized resource of type System.Byte[].
+        '''</summary>
+        Friend ReadOnly Property Notification_Icon_Active() As Byte()
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Notification Icon Active", resourceCulture)
                 Return CType(obj,Byte())
             End Get
         End Property

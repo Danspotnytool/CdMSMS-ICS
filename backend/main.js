@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 // Routers
 app.use('/api/setup', require('./api/setup.js'));
 app.use('/api/user', require('./api/user.js'));
+app.use('/api/admin', require('./api/admin.js'));
 
 const port = process.env.PORT || 3090;
 app.listen(port, () => {

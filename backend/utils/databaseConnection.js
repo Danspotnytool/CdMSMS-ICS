@@ -35,9 +35,9 @@ connection.query('USE cdmsms_ics', (err) => {
 // 			primary key: facultyID
 // 		facilities: facilityID: VARCHAR(10), name: VARCHAR(50), description: TEXT, schedules: TEXT
 // 			primary key: facilityID
-// 		students: studentID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), courses: TEXT, regular: BOOLEAN, email: VARCHAR(50), password: VARCHAR(50), program: VARCHAR(10), schedules: TEXT, section: VARCHAR(10), verificationID: VARCHAR(50), verified: BOOLEAN, forgotPasswordCode: VARCHAR(50), token: VARCHAR(50)
+// 		students: studentID: VARCHAR(10), firstName: VARCHAR(50), lastName: VARCHAR(50), courses: TEXT, email: VARCHAR(50), password: VARCHAR(50), program: VARCHAR(10), schedules: TEXT, section: VARCHAR(10), verificationID: VARCHAR(50), verified: BOOLEAN, forgotPasswordCode: VARCHAR(50), token: VARCHAR(50)
 // 			primary key: studentID
-// 		schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME
+// 		schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, section: VARCHAR(10)
 // 			primary key: scheduleID
 // 		requests: requestID: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, status: VARCHAR(10)
 
@@ -47,7 +47,7 @@ connection.query(`
 		firstName VARCHAR(50),
 		lastName VARCHAR(50),
 		email VARCHAR(50),
-		password VARCHAR(50),
+		password VARCHAR(200),
 		role VARCHAR(10),
 		verificationID VARCHAR(50),
 		verified BOOLEAN,
@@ -73,7 +73,7 @@ connection.query(`
 		firstName VARCHAR(50),
 		lastName VARCHAR(50),
 		email VARCHAR(50),
-		password VARCHAR(50),
+		password VARCHAR(200),
 		courses TEXT,
 		schedules TEXT,
 		programs TEXT,
@@ -100,10 +100,8 @@ connection.query(`
 		studentID VARCHAR(10) PRIMARY KEY NOT NULL,
 		firstName VARCHAR(50),
 		lastName VARCHAR(50),
-		courses TEXT,
-		regular BOOLEAN,
 		email VARCHAR(50),
-		password VARCHAR(50),
+		password VARCHAR(200),
 		program VARCHAR(10),
 		schedules TEXT,
 		section VARCHAR(10),
@@ -119,12 +117,13 @@ connection.query(`
 connection.query(`
 	CREATE TABLE IF NOT EXISTS schedules (
 		scheduleID VARCHAR(10) PRIMARY KEY NOT NULL,
-		courseCode VARCHAR(10),
-		facultyID VARCHAR(10),
-		facilityID VARCHAR(10),
+		courseCode VARCHAR(10) NOT NULL,
+		facultyID VARCHAR(10) NOT NULL,
+		facilityID VARCHAR(10) NOT NULL,
 		day VARCHAR(10),
 		startTime TIME,
-		endTime TIME
+		endTime TIME,
+		section VARCHAR(10)
 	)`, (err) => {
 	if (err) throw err;
 	logger.log(`\tTable: ${logger.colors.green('schedules')}`);
@@ -133,8 +132,8 @@ connection.query(`
 connection.query(`
 	CREATE TABLE IF NOT EXISTS requests (
 		requestID VARCHAR(10) PRIMARY KEY NOT NULL,
-		facultyID VARCHAR(10),
-		facilityID VARCHAR(10),
+		facultyID VARCHAR(10) NOT NULL,
+		facilityID VARCHAR(10) NOT NULL,
 		day VARCHAR(10),
 		startTime TIME,
 		endTime TIME,
