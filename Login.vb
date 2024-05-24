@@ -1,4 +1,6 @@
-﻿Imports System.Resources
+﻿Imports System.IO
+Imports System.Net
+Imports System.Resources
 Imports System.Text.RegularExpressions
 Imports Svg
 
@@ -80,9 +82,32 @@ Public Class Login
                                               {"email", Email},
                                               {"password", Password}
                                           }
-                                          Dim response = Globals.API("POST", "admin/login", Globals.DictionaryToJSON(Data))
 
-                                          'Me.GoToForm(New Dashboard)
+                                          Try
+                                              Dim response = Globals.API("POST", "user/login", Globals.DictionaryToJSON(Data))
+
+                                              Dim user = Globals.JSONToDictionary(response)
+                                              Globals.TOKEN = user("token")
+
+                                              If user("role") = "dean" Then
+                                                  Me.GoToForm(New Dashboard)
+                                              ElseIf user("role") = "bsit" Then
+                                                  Globals.PROGRAM = "bsit"
+                                                  Me.GoToForm(New Dashboard_Calendar)
+                                              ElseIf user("role") = "bscpe" Then
+                                                  Globals.PROGRAM = "bscpe"
+                                                  Me.GoToForm(New Dashboard_Calendar)
+                                              End If
+                                          Catch ex As WebException
+                                              Dim rep As HttpWebResponse = ex.Response
+                                              Using rdr As New StreamReader(rep.GetResponseStream())
+                                                  Dim Modal As New BaseModal With {
+                                                    .Title = "Error",
+                                                    .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
+                                                  }
+                                                  Modal.ShowDialog()
+                                              End Using
+                                          End Try
                                       End Sub
 
         Dim i As Integer = 0
@@ -116,15 +141,16 @@ Public Class Login
         'Check if the system is already set up
         Try
             Dim response = Globals.API("GET", "setup", Nothing)
-        Catch ex As Exception
-            Dim Modal As New BaseModal With {
-                .Title = "System Setup",
-                .Message = "The system is not set up. Please set up the system before logging in.",
-                .Buttons = New Dictionary(Of String, DialogResult) From {
-                    {"OK", DialogResult.OK}
+        Catch ex As WebException
+            Dim rep As HttpWebResponse = ex.Response
+            Using rdr As New StreamReader(rep.GetResponseStream())
+                Dim Modal As New BaseModal With {
+                    .Title = "Error",
+                    .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
                 }
-            }
-            Modal.ShowDialog()
+                Modal.ShowDialog()
+            End Using
+
             Me.GoToForm(New DeanSetup)
         End Try
     End Sub
@@ -189,7 +215,7 @@ Public Class Login
                 CInt(Me.Height * 0.5 - Me.FormPanel.Height * 0.5)
             )
 
-            Dim Background As New Bitmap(Me.Contents.Width, Me.Contents.Height)
+            Dim Background As New Bitmap(Me.Width, Me.Height)
             Dim HalfTrapezoid = Globals.LoadSvgFromResource("Half Trapezoid").Draw()
             Dim BarCompliment_Top = Globals.LoadSvgFromResource("Bar Complement").Draw()
             Dim Bar_Top = Globals.LoadSvgFromResource("Bar").Draw()

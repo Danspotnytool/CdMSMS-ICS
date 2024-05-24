@@ -45,4 +45,20 @@
             Me.BackColor = Color.Transparent
         End Sub
     End Class
+
+    Public Class ComboBox
+        Inherits System.Windows.Forms.ComboBox
+        Public Sub New()
+            SetStyle(ControlStyles.SupportsTransparentBackColor Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.AllPaintingInWmPaint Or ControlStyles.ResizeRedraw Or ControlStyles.UserPaint, True)
+            Me.BackColor = Color.Transparent
+        End Sub
+    End Class
+
+    Public Class PictureBox
+        Inherits System.Windows.Forms.PictureBox
+        Public Sub New()
+            SetStyle(ControlStyles.SupportsTransparentBackColor Or ControlStyles.OptimizedDoubleBuffer Or ControlStyles.AllPaintingInWmPaint Or ControlStyles.ResizeRedraw Or ControlStyles.UserPaint, True)
+            Me.BackColor = Color.Transparent
+        End Sub
+    End Class
 End Module

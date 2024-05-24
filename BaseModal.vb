@@ -115,27 +115,37 @@ Public Class BaseModal
             AddHandler Control.MouseUp, AddressOf HeaderBar_MouseUp
         Next
 
+        Dim MessageLabelPanel As New Panel With {
+            .Size = New Size(
+                Me.Width - Globals.Unit(2),
+                Globals.Unit(3)
+            ),
+            .AutoScroll = True
+        }
+        MessageLabelPanel.Location = New Point(
+            (Me.Width - MessageLabelPanel.Width) / 2,
+            HeaderBar.Height + Globals.Unit(1)
+        )
+        Me.Controls.Add(MessageLabelPanel)
+
         Dim MessageLabel As New Label With {
             .Text = Me.Message,
             .Font = Globals.GetFont("Open Sans", Globals.Unit(0.5), FontStyle.Regular),
             .ForeColor = Globals.Palette("Plain Dark"),
-            .MinimumSize = New Size(Me.Width - Globals.Unit(2), Globals.Unit(3)),
-            .MaximumSize = New Size(Me.Width - Globals.Unit(2), Globals.Unit(3)),
+            .MinimumSize = New Size(Me.Width - Globals.Unit(2) - (SystemInformation.VerticalScrollBarWidth * 2), 0),
+            .MaximumSize = New Size(Me.Width - Globals.Unit(2) - (SystemInformation.VerticalScrollBarWidth * 2), 0),
             .AutoSize = True,
-            .TextAlign = ContentAlignment.MiddleCenter
+            .TextAlign = ContentAlignment.MiddleCenter,
+            .Location = New Point(SystemInformation.VerticalScrollBarWidth, 0)
         }
-        MessageLabel.Location = New Point(
-            (Me.Width - MessageLabel.Width) / 2,
-            HeaderBar.Height + Globals.Unit(1)
-        )
-        Me.Controls.Add(MessageLabel)
+        MessageLabelPanel.Controls.Add(MessageLabel)
 
         Dim ButtonPanel As New Panel With {
             .Size = New Size(Me.Width - Globals.Unit(2), Globals.Unit(1))
         }
         ButtonPanel.Location = New Point(
             (Me.Width - ButtonPanel.Width) / 2,
-            MessageLabel.Bottom + Globals.Unit(1)
+            MessageLabelPanel.Bottom + Globals.Unit(1)
         )
         Me.Controls.Add(ButtonPanel)
 

@@ -13,7 +13,7 @@ const connection = require('../utils/databaseConnection.js');
 
 setup.get('/', async (req, res) => {
 	// Check if all table exists and if they have data
-
+	let setup = true;
 	// Admin
 	await new Promise((resolve, reject) => {
 		connection.query('SELECT * FROM admins', (err, results) => {
@@ -21,24 +21,21 @@ setup.get('/', async (req, res) => {
 				res.status(500).send('Internal Server Error');
 				reject(err);
 			} else if (results.length === 0) {
-				res.status(404).send('Admin not found');
-			} else {
-				resolve();
+				setup = false;
 			};
+			resolve();
 		});
 	});
 	// Courses
-	await new Promise((resolve, reject
-	) => {
+	await new Promise((resolve, reject) => {
 		connection.query('SELECT * FROM courses', (err, results) => {
 			if (err) {
 				res.status(500).send('Internal Server Error');
 				reject(err);
 			} else if (results.length === 0) {
-				res.status(404).send('Courses not found');
-			} else {
-				resolve();
+				setup = false;
 			};
+			resolve();
 		});
 	});
 	// Faculties
@@ -48,10 +45,9 @@ setup.get('/', async (req, res) => {
 				res.status(500).send('Internal Server Error');
 				reject(err);
 			} else if (results.length === 0) {
-				res.status(404).send('Faculties not found');
-			} else {
-				resolve();
+				setup = false;
 			};
+			resolve();
 		});
 	});
 	// Facilities
@@ -61,10 +57,9 @@ setup.get('/', async (req, res) => {
 				res.status(500).send('Internal Server Error');
 				reject(err);
 			} else if (results.length === 0) {
-				res.status(404).send('Facilities not found');
-			} else {
-				resolve();
+				setup = false;
 			};
+			resolve();
 		});
 	});
 	// Students
@@ -74,65 +69,68 @@ setup.get('/', async (req, res) => {
 				res.status(500).send('Internal Server Error');
 				reject(err);
 			} else if (results.length === 0) {
-				res.status(404).send('Students not found');
-			} else {
-				resolve();
+				setup = false;
 			};
+			resolve();
 		});
 	});
 
-	// Empty all tables
-	await new Promise((resolve, reject) => {
-		connection.query('DELETE FROM admins', (err) => {
-			if (err) {
-				res.status(500).send('Internal Server Error');
-				reject(err);
-			} else {
-				resolve();
-			};
+	if (setup) {
+		res.send('Database is already setup. Login to the system to continue');
+	} else {
+		res.status(400).send('Not yet setup. Please setup first');
+		// Empty all tables
+		await new Promise((resolve, reject) => {
+			connection.query('DELETE FROM admins', (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
 		});
-	});
-	await new Promise((resolve, reject) => {
-		connection.query('DELETE FROM courses', (err) => {
-			if (err) {
-				res.status(500).send('Internal Server Error');
-				reject(err);
-			} else {
-				resolve();
-			};
+		await new Promise((resolve, reject) => {
+			connection.query('DELETE FROM courses', (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
 		});
-	});
-	await new Promise((resolve, reject) => {
-		connection.query('DELETE FROM faculties', (err) => {
-			if (err) {
-				res.status(500).send('Internal Server Error');
-				reject(err);
-			} else {
-				resolve();
-			};
+		await new Promise((resolve, reject) => {
+			connection.query('DELETE FROM faculties', (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
 		});
-	});
-	await new Promise((resolve, reject) => {
-		connection.query('DELETE FROM facilities', (err) => {
-			if (err) {
-				res.status(500).send('Internal Server Error');
-				reject(err);
-			} else {
-				resolve();
-			};
+		await new Promise((resolve, reject) => {
+			connection.query('DELETE FROM facilities', (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
 		});
-	});
-	await new Promise((resolve, reject) => {
-		connection.query('DELETE FROM students', (err) => {
-			if (err) {
-				res.status(500).send('Internal Server Error');
-				reject(err);
-			} else {
-				resolve();
-			};
+		await new Promise((resolve, reject) => {
+			connection.query('DELETE FROM students', (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
 		});
-	});
-	res.send('Done setup');
+	};
 });
 
 setup.post('/admin', async (req, res) => {
@@ -169,8 +167,7 @@ setup.post('/admin', async (req, res) => {
 		return;
 	};
 
-	const salt = bcrypt.genSaltSync(10);
-	admin.password = bcrypt.hashSync(admin.password, salt);
+	admin.password = await bcrypt.hash(admin.password, 10);
 
 	const adminID = globals.randomID();
 
@@ -194,7 +191,10 @@ setup.post('/admin', async (req, res) => {
 	// Send verification email
 	await mail(admin.email, 'Verify your account', `Click this link to verify your account: ${req.protocol}://${req.get('host')}/api/user/verify/${verificationID}`, `Click this link to verify your account: <a href="${req.protocol}://${req.get('host')}/api/user/verify/${verificationID}">Verify</a>`);
 
-	connection.query('INSERT INTO admins (adminID, firstName, lastName, email, password, role, verificationID, verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [adminID, admin.firstName, admin.lastName, admin.email, admin.password, admin.role, verificationID, false], (err) => {
+	// Generate token
+	const token = `${globals.randomString(10)}.${globals.randomString(30)}`;
+
+	connection.query('INSERT INTO admins (adminID, firstName, lastName, email, password, role, verificationID, verified, token) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [adminID, admin.firstName, admin.lastName, admin.email, admin.password, admin.role, verificationID, false, token], (err) => {
 		if (err) {
 			res.status(500).send('Internal Server Error');
 			return;
@@ -241,9 +241,7 @@ setup.post('/program', async (req, res) => {
 	 *			firstName: String,
 	 *			lastName: String,
 	 *			email: String,
-	 *			section: String,
-	 *			courses: String[],
-	 *			regularity: 'regular' | 'irregular'
+	 *			section: String
 	 * 		}[],
 	 * 		program: 'bsit' | 'bscpe'
 	 * }}
@@ -270,18 +268,6 @@ setup.post('/program', async (req, res) => {
 		jsonData[key] = row;
 	};
 
-	jsonData.students.map((student) => {
-		student.courses = student.courses.split(',')
-			.map((course) => course.trim().replace('[', '').replace(']', ''));
-	});
-
-	for (const course of jsonData.courses) {
-		if (course.courseCode === undefined || course.description === undefined || course.units === undefined || course.yearLevel === undefined) {
-			res.status(400).send(`Missing required fields in courses: ${JSON.stringify(course)}`);
-			return;
-		};
-	};
-
 	for (const faculty of jsonData.faculties) {
 		if (faculty.facultyId === undefined || faculty.firstName === undefined || faculty.lastName === undefined || faculty.email === undefined) {
 			console.log(faculty);
@@ -299,25 +285,9 @@ setup.post('/program', async (req, res) => {
 	};
 
 	for (const student of jsonData.students) {
-		if (student.studentID === undefined || student.firstName === undefined || student.lastName === undefined || student.email === undefined || student.regularity === undefined || student.courses === undefined) {
+		if (student.studentID === undefined || student.firstName === undefined || student.lastName === undefined || student.email === undefined) {
 			console.log(student);
 			res.status(400).send(`Missing required fields in students: ${JSON.stringify(student)}`);
-			return;
-		};
-
-		if (student.courses.some((course) => typeof course !== 'string')) {
-			console.log(student);
-			res.status(400).send(`Invalid courses in students: ${JSON.stringify(student)}`);
-			return;
-		};
-		if (student.courses.length === 0) {
-			console.log(student);
-			res.status(400).send(`No courses in students: ${JSON.stringify(student)}`);
-			return;
-		};
-		if (student.regularity !== 'regular' && student.regularity !== 'irregular') {
-			console.log(student);
-			res.status(400).send(`Invalid regularity in students: ${JSON.stringify(student)}`);
 			return;
 		};
 	};
@@ -402,7 +372,7 @@ setup.post('/program', async (req, res) => {
 
 	await new Promise((resolve, reject) => {
 		for (const student of jsonData.students) {
-			connection.query('INSERT INTO students (studentID, firstName, lastName, email, program, section, courses, regular) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [student.studentID, student.firstName, student.lastName, student.email, jsonData.program, student.section, JSON.stringify(student.courses), student.regularity === 'regular'], (err) => {
+			connection.query('INSERT INTO students (studentID, firstName, lastName, email, program, section) VALUES (?, ?, ?, ?, ?, ?)', [student.studentID, student.firstName, student.lastName, student.email, jsonData.program, student.section], (err) => {
 				if (err) {
 					res.status(500).send('Internal Server Error');
 					reject(err);
@@ -415,7 +385,5 @@ setup.post('/program', async (req, res) => {
 
 	res.send('success');
 });
-
-
 
 module.exports = setup;

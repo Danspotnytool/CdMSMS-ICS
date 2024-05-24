@@ -1,10 +1,7 @@
 
 const globals = require('../utils/globals.js');
-const mail = require('../utils/mail.js');
-const Readable = require('stream').Readable;
 
 const bcrypt = require('bcrypt');
-const csv = require('csv-parser');
 
 const express = require('express');
 const user = express.Router();
@@ -20,6 +17,81 @@ user.post('/login', async (req, res) => {
     let found = false;
     let where = '';
 
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM admins WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else if (results.length > 0) {
+                found = true;
+                where = 'admins';
+                resolve();
+            } else {
+                resolve();
+            };
+        });
+    });
+    if (!found) await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM faculties WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else if (results.length > 0) {
+                found = true;
+                where = 'faculties';
+                resolve();
+            } else {
+                resolve();
+            };
+        });
+    });
+    if (!found) await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM students WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else if (results.length > 0) {
+                found = true;
+                where = 'students';
+                resolve();
+            } else {
+                resolve();
+            };
+        });
+    });
+
+    if (!found) {
+        res.status(404).send('Email not found');
+        return;
+    };
+
+    // Check if password is correct
+    await new Promise((resolve, reject) => {
+        connection.query(`SELECT * FROM ${where} WHERE email = ?`, [email], async (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                /**
+                 * @type {import('../utils/docs.js').Admin | import('../utils/docs.js').Faculty | import('../utils/docs.js').Student}
+                 */
+                const user = results[0];
+                const comparison = await bcrypt.compare(password, user.password);
+                if (comparison) {
+                    // Check if user is verified
+                    if (user.verified) {
+                        console.log(user);
+                        res.send(user);
+                    } else {
+                        res.status(401).send('Account not verified. Please check your email for the verification code');
+                    };
+                } else {
+                    res.status(401).send('Incorrect password');
+                };
+                resolve();
+            };
+        });
+    });
 });
 
 
