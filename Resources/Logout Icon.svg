@@ -1,0 +1,6 @@
+<svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.5">
+<path d="M35 30V20H60V60H35V50" stroke="#1F1F1F" stroke-width="4"/>
+<path d="M20 40L30 30M20 40L30 50M20 40H40" stroke="#1F1F1F" stroke-width="4"/>
+</g>
+</svg>

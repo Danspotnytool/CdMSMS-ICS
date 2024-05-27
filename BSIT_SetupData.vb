@@ -62,7 +62,7 @@ Public Class BSIT_SetupData
         Dim StudentsInput As New FileInputPanel With {
             .Label = "Students",
             .Description = "Upload .csv file of students.",
-            .Format = "studentID, firstName, lastName, section, courses, regularity"
+            .Format = "studentID, firstName, lastName, section"
         }
         Me.FormPanel.Controls.Add(StudentsInput)
 

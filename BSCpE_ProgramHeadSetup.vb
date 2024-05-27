@@ -84,7 +84,8 @@ Public Class BSCpE_ProgramHeadSetup
 
         Dim ContinueButton As New BaseButton With {
             .Text = "Continue",
-            .Name = "Continue"
+            .Name = "Continue",
+            .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
         }
         Me.FormPanel.Controls.Add(ContinueButton)
         AddHandler ContinueButton.Click, Sub()

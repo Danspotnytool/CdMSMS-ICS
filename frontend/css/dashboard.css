@@ -1,0 +1,204 @@
+
+#sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8rem;
+    height: 100%;
+    background-color: var(--color-plain-light);
+}
+#sidebar > img {
+    width: 100%;
+    cursor: pointer;
+}
+#sidebar > img:hover {
+    filter: brightness(0.75);
+}
+#sidebar > #logoutIcon {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+
+#mainPanel {
+    position: absolute;
+    top: 0;
+    left: 8rem;
+    height: 100%;
+    width: calc(100% - 8rem);
+    overflow-x: auto;
+}
+
+#calendar {
+    position: relative;
+    top: 4rem;
+    left: 4rem;
+    width: calc(100% - 8rem);
+    min-width: 160rem;
+    height: calc(100% - 8rem);
+    min-height: 80rem;
+}
+#calendarHeader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4rem;
+    width: 100%;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+#days {
+    position: absolute;
+    top: 4rem;
+    left: 0;
+    height: 4rem;
+    width: 100%;
+    background-color: var(--color-secondary);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+#days > * {
+    width: 12.5%;
+    text-align: center;
+    color: var(--color-white);
+}
+#timeStamps {
+    position: absolute;
+    top: 8rem;
+    left: 0;
+    width: 12.5%;
+    height: calc(100% - 12rem);
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+#timeStamps > * {
+    font-size: 1.75rem;
+}
+#daysPanel {
+    position: absolute;
+    top: 8rem;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 12rem);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+#daysPanel > * {
+    position: relative;
+    width: 12.5%;
+    height: 100%;
+    padding: 0 1rem;
+}
+#daysPanel > *:nth-child(odd) {
+    background-color: var(--color-plain-light);
+}
+#footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4rem;
+    width: 100%;
+    background-color: var(--color-primary);
+}
+
+.schedule {
+    position: absolute;
+    width: calc(100% - 2rem);
+    background-color: var(--color-plain-light);
+    text-align: center;
+}
+.schedule.even {
+    border: solid 0.5rem var(--color-plain-dark);
+}
+.schedule.odd {
+    border: solid 0.5rem var(--color-secondary);
+}
+.schedule > h6 {
+    margin: 0;
+    color: var(--color-white);
+}
+.schedule.even > h6 {
+    background-color: var(--color-plain-dark);
+}
+.schedule.odd > h6 {
+    background-color: var(--color-secondary);
+}
+
+.requestForm {
+    position: absolute;
+    left: -1rem;
+    width: 100%;
+    padding: 1rem;
+    padding-top: 3rem;
+    background-color: var(--color-plain-light);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+.requestForm.even {
+    border: solid 0.5rem var(--color-secondary);
+}
+.requestForm.odd {
+    border: solid 0.5rem var(--color-plain-dark);
+}
+.requestForm > h6 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    color: var(--color-plain-light);
+}
+.requestForm.even > h6 {
+    background-color: var(--color-secondary);
+}
+.requestForm.odd > h6 {
+    background-color: var(--color-plain-dark);
+}
+.requestForm > .dropDown {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: center;
+}
+.requestForm > .dropDown > select {
+    width: 100%;
+}
+.requestForm > .dropDown > textarea {
+    width: 100%;
+    height: 10rem;
+    resize: none;
+    padding: 0.5rem;
+    color: var(--color-plain-dark);
+    border: solid 0.1rem var(--color-plain-dark);
+    background-color: var(--color-white);
+}
+.requestForm > .button {
+    width: 100%;
+}
+.requestForm.even > .button {
+    background-color: var(--color-secondary);
+}
+.requestForm.odd > .button {
+    background-color: var(--color-plain-dark);
+}

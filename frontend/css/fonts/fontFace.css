@@ -1,0 +1,60 @@
+
+/* -------------------- Open Sans -------------------- */
+/* Normal */
+@font-face {
+	font-family: 'Open Sans';
+	font-style: normal;
+	font-weight: 400;
+	src: url('./OpenSans-Regular.ttf') format('truetype');
+}
+/* Semi Bold */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 600;
+    src: url('./OpenSans-SemiBold.ttf') format('truetype');
+}
+/* Bold */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./OpenSans-Bold.ttf') format('truetype');
+}
+/* Italic */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: italic;
+    font-weight: 400;
+    src: url('./OpenSans-Italic.ttf') format('truetype');
+}
+/* Semi Bold Italic */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: italic;
+    font-weight: 600;
+    src: url('./OpenSans-SemiBoldItalic.ttf') format('truetype');
+}
+/* Bold Italic */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: italic;
+    font-weight: 700;
+    src: url('./OpenSans-BoldItalic.ttf') format('truetype');
+}
+
+/* -------------------- Raleway -------------------- */
+/* Normal */
+@font-face {
+    font-family: 'Raleway';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./Raleway-Regular.ttf') format('truetype');
+}
+/* Bold */
+@font-face {
+    font-family: 'Raleway';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./Raleway-Bold.ttf') format('truetype');
+}

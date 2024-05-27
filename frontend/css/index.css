@@ -1,0 +1,209 @@
+:root {
+	--color-primary: #106A2E;
+	--color-secondary: #0D7856;
+	--color-primary-complement: #F4D35E;
+	--color-plain-light: #F1F1F1;
+	--color-plain-dark: #1F1F1F;
+
+	--color-white: #FFFFFF;
+	--color-black: #000000;
+
+	--transition-speed: 0.25s;
+}
+
+html {
+	font-size: calc(62.5% * 0.75);
+	scroll-behavior: smooth;
+	background-color: var(--color-white);
+	color: var(--color-plain-dark);
+	overflow-x: hidden;
+}
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: "Open Sans", sans-serif;
+	line-height: 100%;
+}
+body {
+	image-rendering: crisp-edges;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	overflow-x: hidden;
+	font-size: 2rem;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: Raleway, sans-serif;
+	color: inherit;
+}
+h1 {
+	font-size: 5.75rem;
+}
+h2 {
+	font-size: 5rem;
+}
+h3 {
+	font-size: 4.25rem;
+}
+h4 {
+	font-size: 3.5rem;
+}
+h5 {
+	font-size: 2.75rem;
+}
+h6 {
+	font-size: 2rem;
+}
+
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Old versions of Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+										supported by Chrome, Edge, Opera and Firefox */
+	pointer-events: none;
+}
+
+#backgroundPanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+}
+
+.textInput {
+	position: relative;
+	width: 100%;
+	height: 4rem;
+	padding: 0 1rem;
+	border: none;
+	border-bottom: solid 0.25rem var(--color-plain-dark);
+	color: var(--color-plain-dark);
+	
+	transition: border-bottom var(--transition-speed);
+}
+.textInput > label {
+	position: absolute;
+	height: 100%;
+	width: calc(100% - 2rem);
+	color: var(--color-plain-dark);
+	background-color: none;
+	display: flex;
+	align-items: center;
+	justify-content: left;
+	z-index: 10;
+
+	transition: height var(--transition-speed), color var(--transition-speed), left var(--transition-speed), width var(--transition-speed);
+}
+.textInput > label > * {
+	transition: font-size var(--transition-speed);
+}
+.textInput > input {
+	position: absolute;
+	height: 100%;
+	width: calc(100% - 2rem);
+	border: none;
+	background-color: transparent;
+	outline: none;
+	color: var(--color-plain-dark);
+}
+.textInput:has(input:focus) {
+	border-bottom: solid 0.25rem var(--color-secondary);
+}
+.textInput > input:focus ~ label {
+	height: 1rem;
+	left: 0.5rem;
+	width: calc(100% - 1rem);
+	color: var(--color-secondary);
+}
+.textInput > input:focus ~ label > * {
+	font-size: 1rem;
+}
+.textInput > input:not(:placeholder-shown) ~ label {
+	height: 1rem !important;
+	left: 0.5rem;
+	width: calc(100% - 1rem);
+}
+.textInput > input:not(:placeholder-shown) ~ label > * {
+	font-size: 1rem !important;
+}
+
+.button {
+	position: relative;
+	padding: 1rem 2.5rem;
+	border: none;
+	background-color: var(--color-secondary);
+	color: var(--color-white);
+	display: inline-block;
+	cursor: pointer;
+	
+	transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+.button:hover {
+	color: var(--color-plain-light);
+	background-color: var(--color-plain-dark);
+}
+
+.modal {
+	position: fixed;
+	top: calc(50% - (30rem / 2));
+	left: calc(50% - (60rem / 2));
+	height: 30rem;
+	width: 60rem;
+	padding-bottom: 4rem;
+	background-color: var(--color-white);
+	border: solid 0.25rem var(--color-secondary);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	z-index: 100;
+}
+.modal > #header {
+	height: 4rem;
+	width: 100%;
+	background-color: var(--color-secondary);
+	color: var(--color-white);
+	padding: 0 4rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.modal > #header > #close {
+	cursor: pointer;
+	position: relative;
+}
+.modal > #header > #close:hover {
+	background-color: rgba(255, 255, 255, 0.25);
+}
+.modal > #header > img {
+	height: 3rem;
+	width: 3rem;
+}
+.modal > #content {
+	width: 100%;
+	padding: 0 4rem;
+	text-align: center;
+}
+.modal > #buttonsPanel {
+	width: 100%;
+	padding: 0 4rem;
+	display: flex;
+	align-items: center;
+	justify-content: stretch;
+	gap: 4rem;
+}
+.modal > #buttonsPanel > .button {
+	width: 100%;
+}

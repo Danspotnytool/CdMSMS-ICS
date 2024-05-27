@@ -718,6 +718,34 @@ Public Class Dashboard_Calendar
         }
         Me.SidePanel.Controls.Add(NotificationIcon)
 
+        Dim LogoutIcon As New PictureBox With {
+            .Image = Globals.LoadSvgFromResource("Logout Icon", New Size(Globals.Unit(2), Globals.Unit(2))).Draw(),
+            .Size = New Size(Globals.Unit(2), Globals.Unit(2)),
+            .SizeMode = PictureBoxSizeMode.Zoom,
+            .Cursor = Cursors.Hand,
+            .Padding = New Padding(0)
+        }
+        LogoutIcon.Margin = New Padding(
+            0,
+            (Me.SidePanel.Height - NotificationIcon.Bottom) - LogoutIcon.Height,
+            0,
+            0
+        )
+        AddHandler Me.SidePanel.Resize, Sub()
+                                            LogoutIcon.Margin = New Padding(
+                                                0,
+                                                (Me.SidePanel.Height - NotificationIcon.Bottom) - LogoutIcon.Height,
+                                                0,
+                                                0
+                                            )
+                                        End Sub
+        AddHandler LogoutIcon.Click, Sub()
+                                         Globals.TOKEN = ""
+                                         Globals.PROGRAM = ""
+                                         Me.GoToForm(New Login)
+                                     End Sub
+        Me.SidePanel.Controls.Add(LogoutIcon)
+
         Me.MainPanel = New Transparent.Panel With {
             .Size = New Size(
                 Me.Contents.Width - Me.SidePanel.Width,
@@ -993,9 +1021,9 @@ Public Class Dashboard_Calendar
                                                     ScheduleEndTime
                                                 )
                                            SchedulePanel.Name = "Schedule"
-                                           Dim Left As Integer = HeaderPanel.Controls(ScheduleDay).Left
+                                           Dim Left As Integer = HeaderPanel.Controls(ScheduleDay).Left + Globals.Unit(0.125 / 2)
                                            Dim Right As Integer = HeaderPanel.Controls(ScheduleDay).Right
-                                           Dim Width As Integer = Right - Left
+                                           Dim Width As Integer = (Right - Left) - Globals.Unit(0.125)
 
                                            Dim Top As Integer = TimestampPanel.Controls(PossibleTimes.IndexOf(ScheduleStartTime)).Top + TimestampPanel.Top
                                            Dim Bottom As Integer = TimestampPanel.Controls(PossibleTimes.IndexOf(ScheduleEndTime) - 1).Bottom + TimestampPanel.Top
@@ -1004,9 +1032,9 @@ Public Class Dashboard_Calendar
                                            SchedulePanel.Location = New Point(Left, Top)
                                            SchedulePanel.Size = New Size(Width, Height)
                                            AddHandler Me.Resize, Sub()
-                                                                     Left = HeaderPanel.Controls(ScheduleDay).Left
+                                                                     Left = HeaderPanel.Controls(ScheduleDay).Left + Globals.Unit(0.125 / 2)
                                                                      Right = HeaderPanel.Controls(ScheduleDay).Right
-                                                                     Width = Right - Left
+                                                                     Width = (Right - Left) - Globals.Unit(0.125)
 
                                                                      Top = TimestampPanel.Controls(PossibleTimes.IndexOf(ScheduleStartTime)).Top + TimestampPanel.Top
                                                                      Bottom = TimestampPanel.Controls(PossibleTimes.IndexOf(ScheduleEndTime) - 1).Bottom + TimestampPanel.Top

@@ -39,7 +39,7 @@ connection.query('USE cdmsms_ics', (err) => {
 // 			primary key: studentID
 // 		schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, section: VARCHAR(10)
 // 			primary key: scheduleID
-// 		requests: requestID: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, status: VARCHAR(10)
+// 		requests: requestID: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, status: VARCHAR(10), requestReason: TEXT, rejectReason: TEXT, requestDate: DATE
 
 connection.query(`
 	CREATE TABLE IF NOT EXISTS admins (
@@ -137,7 +137,10 @@ connection.query(`
 		day VARCHAR(10),
 		startTime TIME,
 		endTime TIME,
-		status VARCHAR(10)
+		status VARCHAR(10),
+		requestReason TEXT,
+		rejectReason TEXT,
+		requestDate DATE
 	)`, (err) => {
 	if (err) throw err;
 	logger.log(`\tTable: ${logger.colors.green('requests')}`);
