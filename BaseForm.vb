@@ -7,8 +7,6 @@ Public Class BaseForm
     Public Sub New()
         InitializeComponent()
         SetStyle(ControlStyles.SupportsTransparentBackColor, True)
-
-        Me.ShowInTaskbar = False
     End Sub
 
 
@@ -28,14 +26,16 @@ Public Class BaseForm
         End Set
     End Property
 
-    Public Sub GoToForm(Form As Form)
+    Public Sub GoToForm(Form As BaseForm)
         Dim Location = MyBase.Location
         Globals.FormLocation = Location
         Dim Size = MyBase.Size
         Globals.FormSize = Size
+        Me.ShowInTaskbar = False
         Me.Hide()
         Form.Show()
         Form.Location = Location
+        Form.ShowInTaskbar = True
     End Sub
 
     Protected Sub BaseForm_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -264,8 +264,6 @@ Public Class BaseForm
         Me.Controls.Add(Contents)
 
         LoopChildrenAddMouseHeaderEvents(HeaderBar)
-
-        Me.ShowInTaskbar = True
     End Sub
 
     Public Contents As Panel

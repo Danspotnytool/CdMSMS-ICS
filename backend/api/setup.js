@@ -270,7 +270,6 @@ setup.post('/program', async (req, res) => {
 
 	for (const faculty of jsonData.faculties) {
 		if (faculty.facultyId === undefined || faculty.firstName === undefined || faculty.lastName === undefined || faculty.email === undefined) {
-			console.log(faculty);
 			res.status(400).send(`Missing required fields in faculties: ${JSON.stringify(faculty)}`);
 			return;
 		};
@@ -278,7 +277,6 @@ setup.post('/program', async (req, res) => {
 
 	for (const facility of jsonData.facilities) {
 		if (facility.facilityID === undefined || facility.name === undefined || facility.description === undefined) {
-			console.log(facility);
 			res.status(400).send(`Missing required fields in facilities: ${JSON.stringify(facility)}`);
 			return;
 		};
@@ -286,7 +284,6 @@ setup.post('/program', async (req, res) => {
 
 	for (const student of jsonData.students) {
 		if (student.studentID === undefined || student.firstName === undefined || student.lastName === undefined || student.email === undefined) {
-			console.log(student);
 			res.status(400).send(`Missing required fields in students: ${JSON.stringify(student)}`);
 			return;
 		};

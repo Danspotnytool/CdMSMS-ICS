@@ -1,0 +1,138 @@
+
+#halfTrapezoid {
+    position: absolute;
+    height: 100%;
+    overflow: hidden;
+    z-index: -2;
+}
+#registerGraphics {
+    position: absolute;
+    height: 100%;
+    width: 50%;
+    object-fit: contain;
+    object-position: center;
+    left: 0;
+}
+@media screen and (max-width: 50rem) {
+    #halfTrapezoid {
+        left: -50%;
+    }
+    #registerGraphics {
+        display: none;
+    }
+}
+@media screen and (max-width: 37.5rem) {
+    #halfTrapezoid {
+        left: -87.5%;
+    }
+}
+
+#barComplement, #bar, #barComplementBottom, #barBottom {
+    position: absolute;
+    z-index: -1;
+}
+#barComplement {
+    height: 62.5%;
+    top: -50%;
+    left: 0;
+}
+#bar {
+    height: 62.5%;
+    top: -50%;
+    left: 62.5%;
+}
+#barComplementBottom {
+    height: 62.5%;
+    top: 75%;
+    left: 25%;
+}
+#barBottom {
+    height: 62.5%;
+    top: 75%;
+    left: 87.5%;
+}
+@media screen and (max-width: 50rem) {
+    #barComplement {
+        left: -25%;
+    }
+    #bar {
+        left: 37.5%;
+    }
+    #barComplementBottom {
+        left: 0;
+    }
+    #barBottom {
+        left: 75%;
+    }
+}
+@media screen and (max-width: 37.5rem) {
+    #barComplement {
+        left: -50%;
+    }
+    #bar {
+        left: 50%;
+    }
+    #barComplementBottom {
+        left: -25%;
+    }
+    #barBottom {
+        left: 75%;
+    }
+}
+
+
+#formPanel {
+    position: absolute;
+    width: 37.5%;
+    height: 100%;
+    right: 12.5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+}
+@media screen and (max-width: 50rem) {
+    #formPanel {
+        width: calc(100% - 16rem);
+        right: 8rem;
+    }
+}
+@media screen and (max-width: 37.5rem) {
+    #formPanel {
+        width: calc(100% - 8rem);
+        right: 4rem;
+    }
+}
+#logo {
+    width: 100%;
+}
+
+#formPanel > h1 {
+    text-align: center;
+    color: var(--color-primary);
+}
+
+#form {
+    width: calc(100% - 8rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+#form > span {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+#registerButton {
+    width: 100%;
+}
+
+#login {
+    text-align: center;
+}

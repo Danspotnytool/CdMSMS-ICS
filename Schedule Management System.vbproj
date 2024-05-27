@@ -160,6 +160,9 @@
     <Compile Include="BaseTextInput.vb">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ForgotPassword.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Form1.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +292,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icon.ico" />
+    <None Include="Resources\Logout Icon.svg" />
     <None Include="Resources\DropDown Arrow.svg" />
     <None Include="Resources\Create Icon.svg" />
     <None Include="Resources\Calendar Icon.svg" />

@@ -153,6 +153,8 @@ Public Class Login
 
             Me.GoToForm(New DeanSetup)
         End Try
+        Me.ShowInTaskbar = False
+        Me.ShowInTaskbar = True
     End Sub
 
     Protected Sub Login_Resize(sender As Object, e As EventArgs) Handles Me.Resize

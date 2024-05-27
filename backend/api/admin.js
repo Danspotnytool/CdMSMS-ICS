@@ -507,86 +507,59 @@ admin.get('/dashboard/program/:program/schedule/:identifier/:key', async (req, r
             section: datum.section,
             day: datum.day,
             startTime: datum.startTime,
-            endTime: datum.endTime
+            endTime: datum.endTime,
+            description: '',
+            identifier: ''
         };
         if (identifier === 'facultyID') {
+            toReturn[datum.scheduleID].description = program === 'bsit' ? `BSIT ${datum.section}` : `BSCpE ${datum.section}`;
+            // Get Facility Name
             await new Promise((resolve, reject) => {
-                // Get Facility and Section
-                connection.query('SELECT facilityID, section FROM schedules WHERE facultyID = ?', [datum.facultyID], async (err, results) => {
+                connection.query('SELECT name FROM facilities WHERE facilityID = ?', [datum.facilityID], (err, results) => {
                     if (err) {
                         res.status(500).send('Internal Server Error');
                         reject(err);
                     } else {
-                        await new Promise((resolve, reject) => {
-                            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [results[0].facilityID], (err, results) => {
-                                if (err) {
-                                    res.status(500).send('Internal Server Error');
-                                    reject(err);
-                                } else {
-                                    toReturn[datum.scheduleID].description = results[0].name;
-                                };
-                                resolve();
-                            });
-                        });
-                        toReturn[datum.scheduleID].identifier = `${program === 'bsit' ? 'BSIT' : 'BSCpE'} ${results[0].section}`;
+                        toReturn[datum.scheduleID].identifier += `${results[0].name}`;
                     };
                     resolve();
                 });
             });
         } else if (identifier === 'facilityID') {
+            toReturn[datum.scheduleID].description = program === 'bsit' ? `BSIT ${datum.section}` : `BSCpE ${datum.section}`;
+            // Get Faculty Name
             await new Promise((resolve, reject) => {
-                // Get Faculty and Section
-                connection.query('SELECT facultyID, section FROM schedules WHERE facilityID = ?', [datum.facilityID], async (err, results) => {
+                connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [datum.facultyID], (err, results) => {
                     if (err) {
                         res.status(500).send('Internal Server Error');
                         reject(err);
                     } else {
-                        await new Promise((resolve, reject) => {
-                            connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [results[0].facultyID], (err, results) => {
-                                if (err) {
-                                    res.status(500).send('Internal Server Error');
-                                    reject(err);
-                                } else {
-                                    toReturn[datum.scheduleID].description = `${results[0].firstName} ${results[0].lastName}`;
-                                };
-                                resolve();
-                            });
-                        });
-                        toReturn[datum.scheduleID].identifier = `${program === 'bsit' ? 'BSIT' : 'BSCpE'} ${results[0].section}`;
+                        toReturn[datum.scheduleID].identifier += `${results[0].firstName} ${results[0].lastName}`;
                     };
                     resolve();
                 });
             });
         } else if (identifier === 'section') {
+            // Get Faculty Name
             await new Promise((resolve, reject) => {
-                // Get Faculty and Facility
-                connection.query('SELECT facultyID, facilityID FROM schedules WHERE section = ?', [datum.section], async (err, results) => {
+                connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [datum.facultyID], (err, results) => {
                     if (err) {
                         res.status(500).send('Internal Server Error');
                         reject(err);
                     } else {
-                        await new Promise((resolve, reject) => {
-                            connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [results[0].facultyID], (err, results) => {
-                                if (err) {
-                                    res.status(500).send('Internal Server Error');
-                                    reject(err);
-                                } else {
-                                    toReturn[datum.scheduleID].description = `${results[0].firstName} ${results[0].lastName}`;
-                                };
-                                resolve();
-                            });
-                        });
-                        await new Promise((resolve, reject) => {
-                            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [results[0].facilityID], (err, results) => {
-                                if (err) {
-                                    res.status(500).send('Internal Server Error');
-                                    reject(err);
-                                } else {
-                                    toReturn[datum.scheduleID].identifier = results[0].name;
-                                };
-                                resolve();
-                            });
-                        });
+                        toReturn[datum.scheduleID].description = `${results[0].firstName} ${results[0].lastName}`;
+                    };
+                    resolve();
+                });
+            });
+            // Get Facility Name
+            await new Promise((resolve, reject) => {
+                connection.query('SELECT name FROM facilities WHERE facilityID = ?', [datum.facilityID], (err, results) => {
+                    if (err) {
+                        res.status(500).send('Internal Server Error');
+                        reject(err);
+                    } else {
+                        toReturn[datum.scheduleID].identifier += `${results[0].name}`;
                     };
                     resolve();
                 });
@@ -606,6 +579,25 @@ admin.get('/dashboard/program/:program/calendars/', async (req, res) => {
 
     const data = [];
 
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT section FROM schedules', (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const result of results) {
+                    if (!data.includes(result.section)) {
+                        data.push({
+                            key: result.section,
+                            name: `${program === 'bsit' ? 'BSIT' : 'BSCpE'} ${result.section}`,
+                            identifier: 'section'
+                        });
+                    };
+                };
+            };
+            resolve();
+        });
+    });
     await new Promise((resolve, reject) => {
         connection.query('SELECT facilityID FROM schedules', async (err, results) => {
             if (err) {
@@ -633,7 +625,6 @@ admin.get('/dashboard/program/:program/calendars/', async (req, res) => {
             resolve();
         });
     });
-
     await new Promise((resolve, reject) => {
         connection.query('SELECT facultyID FROM schedules', async (err, results) => {
             if (err) {
@@ -656,26 +647,6 @@ admin.get('/dashboard/program/:program/calendars/', async (req, res) => {
                             resolve();
                         });
                     });
-                };
-            };
-            resolve();
-        });
-    });
-
-    await new Promise((resolve, reject) => {
-        connection.query('SELECT section FROM schedules', (err, results) => {
-            if (err) {
-                res.status(500).send('Internal Server Error');
-                reject(err);
-            } else {
-                for (const result of results) {
-                    if (!data.includes(result.section)) {
-                        data.push({
-                            key: result.section,
-                            name: `${program === 'bsit' ? 'BSIT' : 'BSCpE'} ${result.section}`,
-                            identifier: 'section'
-                        });
-                    };
                 };
             };
             resolve();

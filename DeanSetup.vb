@@ -83,7 +83,8 @@ Public Class DeanSetup
 
         Dim SetupButton As New BaseButton With {
             .Text = "Setup",
-            .Name = "Setup"
+            .Name = "Setup",
+            .Size = New Size(Me.FormPanel.Width - Globals.Unit(2), Globals.Unit(1))
         }
         Me.FormPanel.Controls.Add(SetupButton)
         AddHandler SetupButton.Click, Sub()

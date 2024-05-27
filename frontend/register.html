@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CdMSMS-ICS</title>
+
+    <link rel="shortcut icon" href="./images/Icon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="./css/fonts/fontFace.css">
+    <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/register.css">
+
+    <script src="./js/globals.js" defer></script>
+    <script src="./js/register.js" defer></script>
+</head>
+
+<body>
+    <div id="backgroundPanel"></div>
+
+    <div id="formPanel">
+        <img src="./images/CdMSMS-ICS Logo.png" alt="" id="logo">
+
+        <h1>Register now!</h1>
+
+        <div id="form">
+            <span>
+                <div class="textInput">
+                    <input type="text" name="firstName" id="firstName" placeholder=" " required>
+                    <label class="noselect" for="firstName">
+                        <h6>
+                            First Name
+                        </h6>
+                    </label>
+                </div>
+                <div class="textInput">
+                    <input type="text" name="lastName" id="lastName" placeholder=" " required>
+                    <label class="noselect" for="lastName">
+                        <h6>
+                            Last Name
+                        </h6>
+                    </label>
+                </div>
+            </span>
+
+            <div class="textInput">
+                <input type="userID" name="userID" id="userID" placeholder=" " required>
+                <label class="noselect" for="userID">
+                    <h6>
+                        Student or Faculty ID
+                    </h6>
+                </label>
+            </div>
+
+            <div class="textInput">
+                <input type="email" name="email" id="email" placeholder=" " required>
+                <label class="noselect" for="email">
+                    <h6>
+                        Email
+                    </h6>
+                </label>
+            </div>
+
+            <div class="textInput">
+                <input type="password" name="password" id="password" placeholder=" " required>
+                <label class="noselect" for="password">
+                    <h6>
+                        Password
+                    </h6>
+                </label>
+            </div>
+
+            <div class="textInput">
+                <input type="password" name="confirmPassword" id="confirmPassword" placeholder=" " required>
+                <label class="noselect" for="confirmPassword">
+                    <h6>
+                        Confirm Password
+                    </h6>
+                </label>
+            </div>
+
+            <button class="button" id="registerButton">
+                <h6>
+                    Register
+                </h6>
+            </button>
+        </div>
+
+        <div id="login">
+            <h6>
+                Already have an account?
+            </h6>
+            <a href="./login">
+                <h6>
+                    Login here
+                </h6>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const backgroundPanel = document.getElementById('backgroundPanel');
+
+        const halfTrapezoid = document.createElement('img');
+        halfTrapezoid.src = './svg/Half Trapezoid.svg';
+        halfTrapezoid.id = 'halfTrapezoid';
+        backgroundPanel.appendChild(halfTrapezoid);
+
+        const barComplement = document.createElement('img');
+        barComplement.src = './svg/Bar Complement.svg';
+        barComplement.id = 'barComplement';
+        backgroundPanel.appendChild(barComplement);
+
+        const bar = document.createElement('img');
+        bar.src = './svg/Bar.svg';
+        bar.id = 'bar';
+        backgroundPanel.appendChild(bar);
+
+        const barComplementBottom = document.createElement('img');
+        barComplementBottom.src = './svg/Bar Complement Bottom.svg';
+        barComplementBottom.id = 'barComplementBottom';
+        backgroundPanel.appendChild(barComplementBottom);
+
+        const barBottom = document.createElement('img');
+        barBottom.src = './svg/Bar Bottom.svg';
+        barBottom.id = 'barBottom';
+        backgroundPanel.appendChild(barBottom);
+
+        const registerGraphics = document.createElement('img');
+        registerGraphics.src = './svg/Register Graphics.svg';
+        registerGraphics.id = 'registerGraphics';
+        backgroundPanel.appendChild(registerGraphics);
+    </script>
+</body>
+
+</html>
