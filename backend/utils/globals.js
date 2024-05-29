@@ -37,10 +37,18 @@ const convertTime12to24 = (time12h) => {
         hours = parseInt(hours, 10) + 12;
     };
     return `${hours}:${minutes}`;
-}
+};
+
+const rooms = {
+    'calendar_admin': [],
+    'notifications_admin': [],
+    'calendar_user': [],
+    'notifications_user': []
+};
 
 module.exports = {
     randomString,
     randomID,
-    convertTime12to24
+    convertTime12to24,
+    rooms
 };

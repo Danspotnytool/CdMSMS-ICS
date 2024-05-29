@@ -48,21 +48,15 @@ Public Class BSIT_SetupData
         Dim FacultiesInput As New FileInputPanel With {
             .Label = "Faculties",
             .Description = "Upload .csv file of faculties.",
-            .Format = "facultiesID, firstName, lastName"
+            .Format = "facultiesID, firstName, lastName, email"
         }
         Me.FormPanel.Controls.Add(FacultiesInput)
-
-        Dim FacilitiesInput As New FileInputPanel With {
-            .Label = "Facilities",
-            .Description = "Upload .csv file of facilities.",
-            .Format = "facilityID, name, description"
-        }
-        Me.FormPanel.Controls.Add(FacilitiesInput)
 
         Dim StudentsInput As New FileInputPanel With {
             .Label = "Students",
             .Description = "Upload .csv file of students.",
-            .Format = "studentID, firstName, lastName, section"
+            .Format = "studentID, firstName, lastName, email, section",
+            .Name = "StudentsInput"
         }
         Me.FormPanel.Controls.Add(StudentsInput)
 
@@ -86,6 +80,14 @@ Public Class BSIT_SetupData
             End If
             i = i + 1
         Next
+        StudentsInput.MinimumSize = New Size(
+            (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
+            0
+        )
+        StudentsInput.MaximumSize = New Size(
+            (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
+            0
+        )
 
         Dim SubmitButton As New BaseButton With {
             .Name = "Submit",
@@ -136,27 +138,6 @@ Public Class BSIT_SetupData
                                                     }
                                                    Modal.ShowDialog()
                                                    FacultiesInput.Alert()
-                                                   Exit Sub
-                                               End Try
-                                           End If
-                                           If FacilitiesInput.FilePath = "" Then
-                                               Dim Modal As New BaseModal With {
-                                                    .Title = "Error",
-                                                    .Message = "Please upload a .csv file for facilities."
-                                                }
-                                               Modal.ShowDialog()
-                                               FacilitiesInput.Alert()
-                                               Exit Sub
-                                           Else
-                                               Try
-                                                   Data.Add("facilities", File.ReadAllText(FacilitiesInput.FilePath))
-                                               Catch ex As Exception
-                                                   Dim Modal As New BaseModal With {
-                                                        .Title = "Error",
-                                                        .Message = ex.Message
-                                                    }
-                                                   Modal.ShowDialog()
-                                                   FacilitiesInput.Alert()
                                                    Exit Sub
                                                End Try
                                            End If
@@ -226,6 +207,14 @@ Public Class BSIT_SetupData
                     Control.MaximumSize.Height
                 )
             Next
+            Me.FormPanel.Controls("StudentsInput").MinimumSize = New Size(
+                (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
+                Me.FormPanel.Controls("StudentsInput").MaximumSize.Height
+            )
+            Me.FormPanel.Controls("StudentsInput").MaximumSize = New Size(
+                (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
+                Me.FormPanel.Controls("StudentsInput").MaximumSize.Height
+            )
             Me.Contents.Controls("Submit").Location = New Point(
                 Me.FormPanel.Right - Me.Contents.Controls("Submit").Width,
                 Me.FormPanel.Bottom + Globals.Unit(1)
@@ -346,8 +335,8 @@ Public Class BSIT_SetupData
             Dim FormatDescription As New Transparent.Label With {
                 .Text = "Course Code, Course Title, Course Description, Course Units",
                 .AutoSize = True,
-                .MinimumSize = New Size(Me.Width, Globals.Unit(0.75)),
-                .MaximumSize = New Size(Me.Width, Globals.Unit(0.75)),
+                .MinimumSize = New Size(Me.Width, Globals.Unit(1)),
+                .MaximumSize = New Size(Me.Width, Globals.Unit(1)),
                 .Location = New Point(0, Globals.Unit(3)),
                 .Font = Globals.GetFont("Open Sans", Globals.Unit(0.5), FontStyle.Regular),
                 .ForeColor = Globals.Palette("Plain Dark"),

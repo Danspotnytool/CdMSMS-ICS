@@ -460,6 +460,13 @@ admin.post('/dashboard/program/:program/schedule/', async (req, res) => {
     };
 
     res.send('Success');
+
+    for (const ws of globals.rooms['calendar_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['calendar_user']) {
+        ws.send("refresh");
+    };
 });
 
 // Get Schedule
@@ -570,6 +577,7 @@ admin.get('/dashboard/program/:program/schedule/:identifier/:key', async (req, r
     res.send(toReturn);
 });
 
+// Get Calendar
 admin.get('/dashboard/program/:program/calendars/', async (req, res) => {
     const program = req.params['program'].toLowerCase();
     if (program !== 'bsit' && program !== 'bscpe') {
@@ -806,6 +814,13 @@ admin.post('/dashboard/program/:program/update/schedule/:scheduleID', async (req
     };
 
     res.send('Schedule updated');
+
+    for (const ws of globals.rooms['calendar_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['calendar_user']) {
+        ws.send("refresh");
+    };
 });
 
 // Delete Schedule
@@ -909,6 +924,350 @@ admin.post('/dashboard/program/:program/delete/schedule/:scheduleID', async (req
     });
 
     res.send('Schedule deleted');
+
+    for (const ws of globals.rooms['calendar_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['calendar_user']) {
+        ws.send("refresh");
+    };
+});
+
+// Get Requests
+admin.get('/dashboard/program/:program/requests/', async (req, res) => {
+    const program = req.params['program'].toLowerCase();
+    if (program !== 'bsit' && program !== 'bscpe') {
+        res.status(400).send('Invalid program');
+        return;
+    };
+
+    const data = [];
+
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM requests WHERE program = ?', [program], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const result of results) {
+                    data.push(result);
+                };
+            };
+            resolve();
+        });
+    });
+
+    // Sort by date
+    data.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+
+    const toReturn = {};
+
+    for (const datum of data) {
+        const request = {
+            requestID: datum.requestID,
+            facultyID: datum.facultyID,
+            facultyName: '',
+            original: {
+                facilityID: datum.original_facilityID,
+                facilityName: '',
+                day: datum.original_day,
+                startTime: datum.original_startTime,
+                endTime: datum.original_endTime
+            },
+            request: {
+                facilityID: datum.request_facilityID,
+                facilityName: '',
+                day: datum.request_day,
+                startTime: datum.request_startTime,
+                endTime: datum.request_endTime
+            },
+            status: datum.status,
+            requestReason: datum.requestReason,
+            rejectReason: datum.rejectReason,
+            requestDate: datum.requestDate,
+            program: datum.program,
+            courseCode: datum.courseCode,
+            scheduleID: datum.scheduleID
+        };
+
+        // Get faculty name
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [datum.facultyID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    request.facultyName = `${results[0].firstName} ${results[0].lastName}`;
+                };
+                resolve();
+            });
+        });
+        // Get original facility name
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [request.original.facilityID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    request.original.facilityName = results[0].name;
+                };
+                resolve();
+            });
+        });
+        // Get request facility name
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [request.request.facilityID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    request.request.facilityName = results[0].name;
+                };
+                resolve();
+            });
+        });
+        toReturn[datum.requestID] = request;
+    };
+
+    res.send(toReturn);
+});
+
+// Reject Request
+admin.post('/dashboard/program/:program/requests/:requestID/reject/', async (req, res) => {
+    const program = req.params['program'].toLowerCase();
+    const requestID = req.params['requestID'];
+
+    const rejectReason = req.body['rejectReason'];
+
+    if (!rejectReason) {
+        res.status(400).send('Invalid reject reason');
+        return;
+    };
+
+    await new Promise((resolve, reject) => {
+        connection.query('UPDATE requests SET status = ?, rejectReason = ? WHERE requestID = ?', ['rejected', rejectReason, requestID], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            };
+            resolve();
+        });
+    });
+
+    res.send('Request rejected');
+    for (const ws of globals.rooms['notifications_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['notifications_user']) {
+        ws.send("refresh");
+    };
+});
+
+// Approve Request
+admin.post('/dashboard/program/:program/requests/:requestID/approve/', async (req, res) => {
+    const program = req.params['program'].toLowerCase();
+    const requestID = req.params['requestID'];
+
+    // Get the request
+    const request = {
+        requestID: '',
+        facultyID: '',
+        facultyName: '',
+        original: {
+            facilityID: '',
+            facilityName: '',
+            day: '',
+            startTime: '',
+            endTime: ''
+        },
+        request: {
+            facilityID: '',
+            facilityName: '',
+            day: '',
+            startTime: '',
+            endTime: ''
+        },
+        status: '',
+        requestReason: '',
+        rejectReason: '',
+        requestDate: '',
+        program: '',
+        courseCode: '',
+        scheduleID: ''
+    };
+
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM requests WHERE requestID = ?', [requestID], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                request.requestID = results[0].requestID;
+                request.facultyID = results[0].facultyID;
+                request.original.facilityID = results[0].original_facilityID;
+                request.original.day = results[0].original_day;
+                request.original.startTime = results[0].original_startTime;
+                request.original.endTime = results[0].original_endTime;
+                request.request.facilityID = results[0].request_facilityID;
+                request.request.day = results[0].request_day;
+                request.request.startTime = results[0].request_startTime;
+                request.request.endTime = results[0].request_endTime;
+                request.status = results[0].status;
+                request.requestReason = results[0].requestReason;
+                request.rejectReason = results[0].rejectReason;
+                request.requestDate = results[0].requestDate;
+                request.program = results[0].program;
+                request.courseCode = results[0].courseCode;
+                request.scheduleID = results[0].scheduleID;
+            };
+            resolve();
+        });
+    });
+
+    // Get section
+    let section = '';
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT section FROM schedules WHERE scheduleID = ?', [request.scheduleID], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                section = results[0].section;
+            };
+            resolve();
+        });
+    });
+
+    // Check for conflicts
+    let conflicts = [];
+    // Faculty
+    await new Promise((resolve, reject) => {
+        connection.query(`
+        SELECT * FROM schedules
+        WHERE facultyID = '${request.facultyID}'
+        AND day = '${request.request.day}'
+        AND ((startTime < '${request.request.endTime}') AND (endTime > '${request.request.startTime}'))`,
+            (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    for (const result of results) {
+                        conflicts.push({
+                            courseCode: result.courseCode,
+                            day: result.day,
+                            startTime: result.startTime,
+                            endTime: result.endTime,
+                            section: result.section,
+                            scheduleID: result.scheduleID,
+                            reason: 'Faculty conflict'
+                        });
+                    };
+                };
+                resolve();
+            });
+    });
+    // Facility
+    await new Promise((resolve, reject) => {
+        connection.query(`
+        SELECT * FROM schedules
+        WHERE facilityID = '${request.request.facilityID}'
+        AND day = '${request.request.day}'
+        AND ((startTime < '${request.request.endTime}') AND (endTime > '${request.request.startTime}'))`,
+            (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    for (const result of results) {
+                        conflicts.push({
+                            courseCode: result.courseCode,
+                            day: result.day,
+                            startTime: result.startTime,
+                            endTime: result.endTime,
+                            section: result.section,
+                            scheduleID: result.scheduleID,
+                            reason: 'Facility conflict'
+                        });
+                    };
+                };
+                resolve();
+            });
+    });
+    // Section
+    await new Promise((resolve, reject) => {
+        connection.query(`
+        SELECT * FROM schedules
+        WHERE section = '${section}'
+        AND day = '${request.request.day}'
+        AND ((startTime < '${request.request.endTime}') AND (endTime > '${request.request.startTime}'))`,
+            (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    for (const result of results) {
+                        conflicts.push({
+                            courseCode: result.courseCode,
+                            day: result.day,
+                            startTime: result.startTime,
+                            endTime: result.endTime,
+                            section: result.section,
+                            scheduleID: result.scheduleID,
+                            reason: 'Section conflict'
+                        });
+                    };
+                };
+                resolve();
+            });
+    });
+
+    // Remove this schedule from the conflicts
+    conflicts = conflicts.filter(conflict => conflict.scheduleID !== request.scheduleID);
+
+    if (conflicts.length > 0) {
+        // Show conflictive schedules
+        res.status(409).send(`Conflicts detected with the following schedules:\n\n${conflicts.map(conflict => `${conflict.reason}:\n| ${conflict.courseCode} | ${program === 'bsit' ? 'BSIT' : 'BSCpE'} ${conflict.section} | ${conflict.day} |\n| ${conflict.startTime} - ${conflict.endTime} |`).join('\n\n')
+            }`);
+        return;
+    } else {
+        // Update the schedule
+        await new Promise((resolve, reject) => {
+            connection.query('UPDATE schedules SET facultyID = ?, facilityID = ?, day = ?, startTime = ?, endTime = ? WHERE scheduleID = ?', [request.facultyID, request.request.facilityID, request.request.day, request.request.startTime, request.request.endTime, request.scheduleID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                };
+                resolve();
+            });
+        });
+
+        // Update the request status
+        await new Promise((resolve, reject) => {
+            connection.query('UPDATE requests SET status = ? WHERE requestID = ?', ['approved', requestID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                };
+                resolve();
+            });
+        });
+    };
+
+    res.send('Request approved');
+
+    for (const ws of globals.rooms['calendar_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['calendar_user']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['notifications_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['notifications_user']) {
+        ws.send("refresh");
+    };
 });
 
 module.exports = admin;

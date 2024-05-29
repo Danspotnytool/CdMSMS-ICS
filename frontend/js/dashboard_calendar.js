@@ -1,5 +1,4 @@
 const logoutIcon = document.getElementById('logoutIcon');
-
 logoutIcon.addEventListener('click', () => {
     // Remove all cookies
     const cookies = document.cookie.split(';');
@@ -11,6 +10,11 @@ logoutIcon.addEventListener('click', () => {
     window.location.href = '/login';
 });
 
+const notificationIcon = document.getElementById('notificationIcon');
+notificationIcon.addEventListener('click', () => {
+    window.location.href = '/dashboard_notification';
+});
+
 const calendar = document.getElementById('calendar');
 const timeStamps = document.getElementById('timeStamps');
 
@@ -20,6 +24,10 @@ const displaySchedules = () => {
     for (const schedule of schedules) {
         schedule.remove();
     };
+    for (const requestForm of document.querySelectorAll('.requestForm')) {
+        requestForm.remove();
+    };
+
     api('POST', 'user/schedules/', getCookiesJSON())
         .then((res) => {
             /**
@@ -92,7 +100,7 @@ const displaySchedules = () => {
                         requestForm.remove();
                     };
 
-                    const requestForm = document.createElement('form');
+                    const requestForm = document.createElement('div');
                     requestForm.classList.add('requestForm');
                     requestForm.classList.add(schedule.day);
                     requestForm.classList.add(scheduleElement.classList.contains('even') ? 'even' : 'odd');
@@ -254,6 +262,31 @@ const displaySchedules = () => {
                         daysPanel.children[6].appendChild(requestForm);
                     else if (schedule.day === 'Saturday')
                         daysPanel.children[5].appendChild(requestForm);
+
+                    const submitButton = requestForm.querySelector('#submitButton');
+                    submitButton.addEventListener('click', () => {
+                        const facilityID = facilityDropDown.value;
+                        const day = requestForm.querySelector('#dayDropDown').value;
+                        const startTime = startTimeDropDown.value;
+                        const endTime = endTimeDropDown.value;
+                        const reason = requestForm.querySelector('#reason').value;
+
+                        api('POST', 'user/request/', {
+                            scheduleID: schedule.scheduleID,
+                            facilityID,
+                            day,
+                            startTime,
+                            endTime,
+                            reason,
+                            section: schedule.section.split(' ')[1],
+                            ...getCookiesJSON()
+                        })
+                            .then(() => {
+                                modal('Success', 'Request submitted successfully.', [{ text: 'OK', onClick: (e, modal, background) => { modal.remove(); background.remove(); displaySchedules(); } }]);
+                                requestForm.remove();
+                            })
+                            .catch(err => modal('Error', err.message, [{ text: 'OK', onClick: (e, modal, background) => { modal.remove(); background.remove(); } }]));
+                    });
                 });
             };
 
@@ -298,5 +331,13 @@ window.addEventListener('load', () => {
     if (getCookiesJSON().identifier === 'facultyID') {
         const notificationIcon = document.getElementById('notificationIcon');
         notificationIcon.style.display = 'block';
+    };
+
+    const ws = new WebSocket(`ws://${window.location.host}/`.replace(window.location.port, parseInt(window.location.port) - 1));
+    ws.onopen = () => {
+        ws.send(JSON.stringify({ type: 'join', room: 'calendar_user' }));
+    };
+    ws.onmessage = () => {
+        displaySchedules();
     };
 });

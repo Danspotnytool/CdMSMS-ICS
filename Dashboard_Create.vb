@@ -57,6 +57,9 @@ Public Class Dashboard_Create
             .Margin = New Padding(0),
             .Padding = New Padding(0)
         }
+        AddHandler NotificationIcon.Click, Sub()
+                                               Me.GoToForm(New Dashboard_Notification)
+                                           End Sub
         Me.SidePanel.Controls.Add(NotificationIcon)
 
         Me.MainPanel = New Transparent.Panel With {
@@ -78,7 +81,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "Year Level",
             .Location = New Point(Globals.Unit(1), Globals.Unit(1)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Year Level"
         }
         Invoke(Sub()
@@ -110,7 +113,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "Course",
             .Location = New Point(Globals.Unit(1), Globals.Unit(3)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Course"
         }
         AddHandler YearLevel.SelectedIndexChanged, Sub()
@@ -147,7 +150,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "Faculty",
             .Location = New Point(Globals.Unit(1), Globals.Unit(5)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Faculty"
         }
         AddHandler YearLevel.SelectedIndexChanged, Sub()
@@ -184,7 +187,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "Facility",
             .Location = New Point(Globals.Unit(1), Globals.Unit(7)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Facility"
         }
         AddHandler YearLevel.SelectedIndexChanged, Sub()
@@ -221,7 +224,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "Section",
             .Location = New Point(Globals.Unit(1), Globals.Unit(9)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Section"
         }
         AddHandler YearLevel.SelectedIndexChanged, Sub()
@@ -266,7 +269,7 @@ Public Class Dashboard_Create
             },
             .Name = "Day",
             .Location = New Point(Globals.Unit(1), Globals.Unit(11)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Day"
         }
         Me.MainPanel.Controls.Add(Day)
@@ -301,7 +304,7 @@ Public Class Dashboard_Create
             },
             .Name = "Start Time",
             .Location = New Point(Globals.Unit(1), Globals.Unit(13)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select Start Time"
         }
         Me.MainPanel.Controls.Add(StartTime)
@@ -310,7 +313,7 @@ Public Class Dashboard_Create
             .Items = New List(Of String),
             .Name = "End Time",
             .Location = New Point(Globals.Unit(1), Globals.Unit(15)),
-            .Size = New Size(Globals.Unit(10), Globals.Unit(1.5)),
+            .Size = New Size(Globals.Unit(12), Globals.Unit(1.5)),
             .PlaceHodlder = "Select End Time"
         }
         AddHandler StartTime.SelectedIndexChanged, Sub()

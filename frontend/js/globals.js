@@ -25,7 +25,7 @@ const api = (method, path, data) => new Promise((resolve, reject) => {
 			if (response.ok) {
 				return await response.text();
 			} else {
-				throw new Error(`HTTP ${response.status}\n${await response.text()}`);
+				throw new Error(`HTTP ${response.status}: ${await response.text()}`);
 			};
 		})
 		.then(response => {

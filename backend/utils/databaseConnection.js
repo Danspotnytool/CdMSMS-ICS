@@ -39,7 +39,7 @@ connection.query('USE cdmsms_ics', (err) => {
 // 			primary key: studentID
 // 		schedules: scheduleID: VARCHAR(10), courseCode: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, section: VARCHAR(10)
 // 			primary key: scheduleID
-// 		requests: requestID: VARCHAR(10), facultyID: VARCHAR(10), facilityID: VARCHAR(10), day: VARCHAR(10), startTime: TIME, endTime: TIME, status: VARCHAR(10), requestReason: TEXT, rejectReason: TEXT, requestDate: DATE
+// 		requests: requestID: VARCHAR(10), facultyID: VARCHAR(10), original_facilityID VARCHAR(10), original_day VARCHAR(10), original_startTime TIME, original_endTime TIME, request_facilityID VARCHAR(10), request_day VARCHAR(10), request_startTime TIME, request_endTime TIME, status VARCHAR(10), requestReason TEXT, rejectReason TEXT, requestDate DATETIME, program VARCHAR(10), courseCode VARCHAR(10), scheduleID VARCHAR(10)
 
 connection.query(`
 	CREATE TABLE IF NOT EXISTS admins (
@@ -74,7 +74,6 @@ connection.query(`
 		lastName VARCHAR(50),
 		email VARCHAR(50),
 		password VARCHAR(200),
-		courses TEXT,
 		schedules TEXT,
 		programs TEXT,
 		verificationID VARCHAR(50),
@@ -133,14 +132,24 @@ connection.query(`
 	CREATE TABLE IF NOT EXISTS requests (
 		requestID VARCHAR(10) PRIMARY KEY NOT NULL,
 		facultyID VARCHAR(10) NOT NULL,
-		facilityID VARCHAR(10) NOT NULL,
-		day VARCHAR(10),
-		startTime TIME,
-		endTime TIME,
+		
+		original_facilityID VARCHAR(10) NOT NULL,
+		original_day VARCHAR(10),
+		original_startTime TIME,
+		original_endTime TIME,
+		
+		request_facilityID VARCHAR(10) NOT NULL,
+		request_day VARCHAR(10),
+		request_startTime TIME,
+		request_endTime TIME,
+		
 		status VARCHAR(10),
 		requestReason TEXT,
 		rejectReason TEXT,
-		requestDate DATE
+		requestDate DATETIME,
+		program VARCHAR(10),
+		courseCode VARCHAR(10),
+		scheduleID VARCHAR(10)
 	)`, (err) => {
 	if (err) throw err;
 	logger.log(`\tTable: ${logger.colors.green('requests')}`);

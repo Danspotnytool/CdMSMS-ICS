@@ -1,5 +1,8 @@
 ﻿Imports System.Reflection
 Imports System.Resources
+Imports System.Net.WebSockets
+Imports System.Text
+Imports System.Threading
 
 Public Class BaseForm
     Inherits Form
@@ -7,14 +10,13 @@ Public Class BaseForm
     Public Sub New()
         InitializeComponent()
         SetStyle(ControlStyles.SupportsTransparentBackColor, True)
+
+        Me.ShowInTaskbar = False
+        Me.DoubleBuffered = True
     End Sub
-
-
 
     Public BackgroundBitmap As Bitmap
     Public Loaded As Boolean = False
-
-
 
     Public Overloads Property Name As String
         Get
@@ -31,11 +33,9 @@ Public Class BaseForm
         Globals.FormLocation = Location
         Dim Size = MyBase.Size
         Globals.FormSize = Size
-        Me.ShowInTaskbar = False
         Me.Hide()
         Form.Show()
         Form.Location = Location
-        Form.ShowInTaskbar = True
     End Sub
 
     Protected Sub BaseForm_Load(sender As Object, e As EventArgs) Handles Me.Load
@@ -264,6 +264,8 @@ Public Class BaseForm
         Me.Controls.Add(Contents)
 
         LoopChildrenAddMouseHeaderEvents(HeaderBar)
+
+        Me.ShowInTaskbar = True
     End Sub
 
     Public Contents As Panel
