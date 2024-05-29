@@ -153,10 +153,10 @@
     gap: 1rem;
 }
 .requestForm.even {
-    border: solid 0.5rem var(--color-secondary);
+    border: solid 0.5rem var(--color-plain-dark);
 }
 .requestForm.odd {
-    border: solid 0.5rem var(--color-plain-dark);
+    border: solid 0.5rem var(--color-secondary);
 }
 .requestForm > h6 {
     position: absolute;
@@ -166,10 +166,10 @@
     color: var(--color-plain-light);
 }
 .requestForm.even > h6 {
-    background-color: var(--color-secondary);
+    background-color: var(--color-plain-dark);
 }
 .requestForm.odd > h6 {
-    background-color: var(--color-plain-dark);
+    background-color: var(--color-secondary);
 }
 .requestForm > .dropDown {
     width: 100%;
@@ -197,8 +197,68 @@
     width: 100%;
 }
 .requestForm.even > .button {
-    background-color: var(--color-secondary);
+    background-color: var(--color-plain-dark);
 }
 .requestForm.odd > .button {
-    background-color: var(--color-plain-dark);
+    background-color: var(--color-secondary);
+}
+
+#requests {
+    position: absolute;
+    top: 4rem;
+    left: 4rem;
+    width: calc(100% - 8rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8rem;
+}
+
+.request {
+    position: relative;
+    width: 100%;
+    border-spacing: 0;
+}
+.request caption {
+    height: 4rem;
+    width: 100%;
+    border: solid 0.01rem var(--color-plain-dark);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    text-align: center;
+}
+.request caption * {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.request thead {
+    height: 4rem;
+    color: var(--color-white);
+    background-color: var(--color-secondary);
+}
+.request th:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.125);
+}
+.request th:nth-child(even) {
+    background: rgba(0, 0, 0, 0);
+}
+.request div:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.125);
+}
+.request div:nth-child(even) {
+    background: rgba(0, 0, 0, 0);
+}
+.request th, .request div {
+    height: 4rem;
+    border: solid 0.005rem var(--color-plain-dark);
+}
+.request div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
 }

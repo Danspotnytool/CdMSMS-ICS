@@ -188,6 +188,41 @@ app.get('/dashboard_calendar', (req, res) => {
         });
 });
 
+app.get('/dashboard_notification', (req, res) => {
+    if (!req.headers.cookie) {
+        res.redirect('/login');
+        return;
+    };
+    const cookie = req.cookies;
+
+    if (!cookie.token || !cookie.identifier || !cookie[cookie.identifier]) {
+        res.redirect('/login');
+        return;
+    };
+
+    phin({
+        url: `http://localhost:${port - 1}/api/user/check`,
+        method: 'POST',
+        data: JSON.parse(`{
+            "token": "${cookie.token}",
+            "identifier": "${cookie.identifier}",
+            "${cookie.identifier}": "${cookie[cookie.identifier]}"
+        }`),
+        parse: 'json'
+    })
+        .then(response => {
+            if (response.body.error) {
+                res.redirect('/login');
+                return;
+            };
+            res.sendFile(path.join(__dirname, 'dashboard_notification.html'));
+        })
+        .catch(error => {
+            console.error(error);
+            res.redirect('/login');
+        });
+});
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

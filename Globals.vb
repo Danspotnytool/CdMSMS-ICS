@@ -26,6 +26,26 @@ Module Globals
         )
     End Function
 
+    Public Function Desaturate(color As Color) As Color
+        Dim r As Integer = color.R
+        Dim g As Integer = color.G
+        Dim b As Integer = color.B
+        Dim gray As Integer = CInt(r * 0.299 + g * 0.587 + b * 0.114)
+        Return Color.FromArgb(gray, gray, gray)
+    End Function
+
+    Public Function DimColor(color As Color, factor As Double) As Color
+        Dim r As Integer = CInt(color.R) * factor
+        Dim g As Integer = CInt(color.G) * factor
+        Dim b As Integer = CInt(color.B) * factor
+        Dim a As Integer = CInt(color.A) * factor
+        If r > 255 Then r = 255
+        If g > 255 Then g = 255
+        If b > 255 Then b = 255
+        If a > 255 Then a = 255
+        Return Color.FromArgb(a, r, g, b)
+    End Function
+
     Public ReadOnly Palette As New Dictionary(Of String, Color) From {
         {"Primary", HexToColor("106A2E")},
         {"Secondary", HexToColor("0D7856")},
@@ -135,6 +155,8 @@ Module Globals
 
     Public TOKEN As String = Nothing
     Public PROGRAM As String = "bsit"
+    Public WHERE As String = ""
+
     Public Function Fetch(uri As String, method As String, Optional data As String = "{}") As String
         Dim request As HttpWebRequest = WebRequest.Create(uri)
         If TOKEN IsNot Nothing Then
@@ -173,8 +195,10 @@ Module Globals
         End Select
     End Function
 
+    Public PORT As Integer = 3090
+
     Public Function API(method As String, path As String, Optional data As String = "{}") As String
-        Return Fetch("http://localhost:3090/api/" & path, method, data)
+        Return Fetch("http://localhost:" & PORT & "/api/" & path, method, data)
     End Function
 
     Public Function DictionaryToJSON(dictionary As Dictionary(Of String, String)) As String
@@ -198,7 +222,7 @@ Module Globals
         Return dictionary
     End Function
 
-    Friend Function JSONToDictionary(json As String, recursive As Integer, Optional index As Integer = 0) As Dictionary(Of String, Object)
+    Friend Function JSONToDictionary(json As String, recursive As Integer) As Dictionary(Of String, Object)
         Dim dictionary As Dictionary(Of String, Object) = JsonConvert.DeserializeObject(Of Dictionary(Of String, Object))(json)
         Return dictionary
     End Function

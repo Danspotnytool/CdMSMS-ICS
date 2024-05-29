@@ -275,12 +275,12 @@ setup.post('/program', async (req, res) => {
 		};
 	};
 
-	for (const facility of jsonData.facilities) {
-		if (facility.facilityID === undefined || facility.name === undefined || facility.description === undefined) {
-			res.status(400).send(`Missing required fields in facilities: ${JSON.stringify(facility)}`);
-			return;
-		};
-	};
+	// for (const facility of jsonData.facilities) {
+	// 	if (facility.facilityID === undefined || facility.name === undefined || facility.description === undefined) {
+	// 		res.status(400).send(`Missing required fields in facilities: ${JSON.stringify(facility)}`);
+	// 		return;
+	// 	};
+	// };
 
 	for (const student of jsonData.students) {
 		if (student.studentID === undefined || student.firstName === undefined || student.lastName === undefined || student.email === undefined) {
@@ -342,6 +342,88 @@ setup.post('/program', async (req, res) => {
 		};
 	});
 
+	// await new Promise((resolve, reject) => {
+	// 	for (const facility of jsonData.facilities) {
+	// 		// Check if facility already exists in the database
+	// 		// If it does, skip
+	// 		// If it doesn't, insert it as a new facility
+	// 		connection.query('SELECT * FROM facilities WHERE facilityID = ?', [facility.facilityID], (err, results) => {
+	// 			if (err) {
+	// 				res.status(500).send('Internal Server Error');
+	// 				reject(err);
+	// 			} else if (results.length === 0) {
+	// 				connection.query('INSERT INTO facilities (facilityID, name, description) VALUES (?, ?, ?)', [facility.facilityID, facility.name, facility.description], (err) => {
+	// 					if (err) {
+	// 						res.status(500).send('Internal Server Error');
+	// 						reject(err);
+	// 					} else {
+	// 						resolve();
+	// 					};
+	// 				});
+	// 			} else {
+	// 				resolve();
+	// 			};
+	// 		});
+	// 	};
+	// });
+
+	await new Promise((resolve, reject) => {
+		for (const student of jsonData.students) {
+			connection.query('INSERT INTO students (studentID, firstName, lastName, email, program, section) VALUES (?, ?, ?, ?, ?, ?)', [student.studentID, student.firstName, student.lastName, student.email, jsonData.program, student.section], (err) => {
+				if (err) {
+					res.status(500).send('Internal Server Error');
+					reject(err);
+				} else {
+					resolve();
+				};
+			});
+		};
+	});
+
+	res.send('success');
+});
+
+setup.post('/facilities', async (req, res) => {
+	const data = req.body;
+
+	/**
+	 * @type {{
+	 * 		facilities: {
+	 * 			facilityID: String,
+	 * 			name: String,
+	 * 			description: String
+	 * 		}[]
+	 * }}
+	 */
+	const jsonData = {};
+
+	for (const key in data) {
+		const row = [];
+		const promise = new Promise((resolve, reject) => {
+			stringToStream(data[key])
+				.pipe(csv())
+				.on('data', (data) => {
+					row.push(data);
+				})
+				.on('end', () => {
+					resolve();
+				})
+				.on('error', (err) => {
+					res.status(400).send('Invalid CSV');
+					reject(err);
+				});
+		});
+		await promise;
+		jsonData[key] = row;
+	};
+
+	for (const facility of jsonData.facilities) {
+		if (facility.facilityID === undefined || facility.name === undefined || facility.description === undefined) {
+			res.status(400).send(`Missing required fields in facilities: ${JSON.stringify(facility)}`);
+			return;
+		};
+	};
+
 	await new Promise((resolve, reject) => {
 		for (const facility of jsonData.facilities) {
 			// Check if facility already exists in the database
@@ -360,19 +442,6 @@ setup.post('/program', async (req, res) => {
 							resolve();
 						};
 					});
-				} else {
-					resolve();
-				};
-			});
-		};
-	});
-
-	await new Promise((resolve, reject) => {
-		for (const student of jsonData.students) {
-			connection.query('INSERT INTO students (studentID, firstName, lastName, email, program, section) VALUES (?, ?, ?, ?, ?, ?)', [student.studentID, student.firstName, student.lastName, student.email, jsonData.program, student.section], (err) => {
-				if (err) {
-					res.status(500).send('Internal Server Error');
-					reject(err);
 				} else {
 					resolve();
 				};

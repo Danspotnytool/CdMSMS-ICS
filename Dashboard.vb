@@ -288,50 +288,6 @@ Public Class Dashboard
                End Sub)
         MainPanel.Controls.Add(BSCpE_DashboardItem)
 
-        Dim ResetButton As New BaseButton With {
-            .Text = "Reset"
-        }
-        Me.Contents.Controls.Add(ResetButton)
-        AddHandler Me.Resize, Sub()
-                                  ResetButton.Location = New Point(
-                                    Me.Contents.Width / 2 - ResetButton.Width / 2,
-                                    Me.Contents.Height - ResetButton.Height - Globals.Unit(2)
-                                  )
-                              End Sub
-        AddHandler ResetButton.Click, Sub()
-                                          Dim Modal As New BaseModal With {
-                                              .Title = "Reset System",
-                                              .Message = "Are you sure you want to reset the system?",
-                                              .Buttons = New Dictionary(Of String, DialogResult) From {
-                                                  {"Yes", DialogResult.Yes},
-                                                  {"No", DialogResult.No}
-                                              }
-                                          }
-                                          If Modal.ShowDialog() = DialogResult.Yes Then
-                                              Try
-                                                  Dim response = Globals.API("POST", "reset", Nothing)
-                                                  Dim data = Globals.JSONToDictionary(response)
-                                                  Dim Modal2 As New BaseModal With {
-                                                      .Title = "System Reset",
-                                                      .Message = data("message"),
-                                                      .Buttons = New Dictionary(Of String, DialogResult) From {
-                                                          {"OK", DialogResult.OK}
-                                                      }
-                                                  }
-                                                  Modal2.ShowDialog()
-                                              Catch ex As Exception
-                                                  Dim Modal2 As New BaseModal With {
-                                                      .Title = "Error",
-                                                      .Message = "An error occurred while resetting the system.",
-                                                      .Buttons = New Dictionary(Of String, DialogResult) From {
-                                                          {"OK", DialogResult.OK}
-                                                      }
-                                                  }
-                                                  Modal2.ShowDialog()
-                                              End Try
-                                          End If
-                                      End Sub
-
         'Check if the system is already set up
         Try
             Dim response = Globals.API("GET", "setup", Nothing)

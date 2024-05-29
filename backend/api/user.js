@@ -75,6 +75,14 @@ user.post('/login', async (req, res) => {
                  * @type {import('../utils/docs.js').Admin | import('../utils/docs.js').Faculty | import('../utils/docs.js').Student}
                  */
                 const user = results[0];
+                if (email !== user.email) {
+                    res.status(404).send('Email not found');
+                    return;
+                };
+                if (!user.password) {
+                    res.status(401).send('User hasn\'t set a registered yet');
+                    return;
+                };
                 const comparison = await bcrypt.compare(password, user.password);
                 if (comparison) {
                     // Check if user is verified
@@ -910,7 +918,7 @@ user.post('/facilities/', async (req, res) => {
         identifier: req.body['identifier'],
         [req.body['identifier']]: req.body[req.body['identifier']]
     };
-    console.log(data);
+
     if (!data.token) {
         res.status(400).send('Token is required');
         return;
@@ -937,7 +945,7 @@ user.post('/facilities/', async (req, res) => {
         });
     };
 
-    // Check if token exists in faculties or students
+    // Check if token exists in faculties
     let found = false;
     let where = '';
     let user = null;
@@ -981,4 +989,454 @@ user.post('/facilities/', async (req, res) => {
     res.send(facilities);
 });
 
+user.post('/request/', async (req, res) => {
+    const data = {
+        token: req.body['token'],
+        identifier: req.body['identifier'],
+        [req.body['identifier']]: req.body[req.body['identifier']]
+    };
+
+    if (!data.token) {
+        res.status(400).send('Token is required');
+        return;
+    };
+    if (!data.identifier) {
+        res.status(400).send('Identifier is required');
+        return;
+    };
+
+    // if identifier is studentID, change it to the student's section
+    if (data.identifier === 'studentID') {
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT section FROM students WHERE studentID = ?', [data.studentID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    data.studentID = undefined;
+                    data.section = results[0].section;
+                    data.identifier = 'section';
+                    resolve();
+                };
+            });
+        });
+    };
+
+    // Check if token exists in faculties
+    let found = false;
+    let where = '';
+    let user = null;
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM faculties WHERE token = ?', [data.token], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    found = true;
+                    where = 'faculties';
+                    user = results[0];
+                };
+                resolve();
+            };
+        });
+    });
+    // if user is not found, reject
+    if (!found) {
+        res.status(401).send('Unauthorized');
+        return;
+    };
+
+    const requestData = {
+        scheduleID: req.body['scheduleID'],
+        facultyID: data[data['identifier']],
+        facilityID: req.body['facilityID'],
+        day: req.body['day'],
+        startTime: `${globals.convertTime12to24(req.body['startTime'])}:00`,
+        endTime: `${globals.convertTime12to24(req.body['endTime'])}:00`,
+        reason: req.body['reason'],
+        section: req.body['section']
+    };
+
+    if (!requestData.scheduleID || !requestData.facultyID || !requestData.facilityID || !requestData.day || !requestData.startTime || !requestData.endTime || !requestData.reason) {
+        res.status(400).send('All fields are required');
+        return;
+    };
+
+    let schedule = {};
+
+    // Get schedule
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM schedules WHERE scheduleID = ?', [requestData.scheduleID], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    schedule = results[0];
+                };
+                resolve();
+            };
+        });
+    });
+
+    if (!schedule) {
+        res.status(404).send('Schedule not found');
+        return;
+    };
+
+    if (
+        (requestData.facilityID === schedule.facilityID)
+        & (requestData.day === schedule.day)
+        & (requestData.startTime === schedule.startTime)
+        & (requestData.endTime === schedule.endTime)
+    ) {
+        res.status(409).send('Schedule unchanged');
+        return;
+    };
+
+    // Check if schedule is already requested
+    let requested = false;
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM requests WHERE scheduleID = ? AND status = ?', [requestData.scheduleID, 'pending'], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    requested = true;
+                };
+                resolve();
+            };
+        });
+    });
+
+    if (requested) {
+        res.status(409).send('Schedule already requested');
+        return;
+    };
+
+    // Check for conflicts
+    let conflicts = [];
+    // Faculty
+    await new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT * FROM schedules
+            WHERE facultyID = ?
+            AND day = ?
+            AND (
+                (startTime BETWEEN ? AND ?)
+                OR (endTime BETWEEN ? AND ?)
+            )`, [requestData.facultyID, requestData.day, requestData.startTime, requestData.endTime, requestData.startTime, requestData.endTime], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const result of results) {
+                    conflicts.push(result);
+                };
+                resolve();
+            };
+        });
+    });
+    // Facility
+    await new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT * FROM schedules
+            WHERE facilityID = ?
+            AND day = ?
+            AND (
+                (startTime BETWEEN ? AND ?)
+                OR (endTime BETWEEN ? AND ?)
+            )`, [requestData.facilityID, requestData.day, requestData.startTime, requestData.endTime, requestData.startTime, requestData.endTime], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const result of results) {
+                    conflicts.push(result);
+                };
+                resolve();
+            };
+        });
+    });
+    // Section
+    await new Promise((resolve, reject) => {
+        connection.query(`
+            SELECT * FROM schedules
+            WHERE section = ?
+            AND day = ?
+            AND (
+                (startTime BETWEEN ? AND ?)
+                OR (endTime BETWEEN ? AND ?)
+            )`, [requestData.section, requestData.day, requestData.startTime, requestData.endTime, requestData.startTime, requestData.endTime], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const result of results) {
+                    conflicts.push(result);
+                };
+                resolve();
+            };
+        });
+    });
+
+    // Remove this schedule from conflicts
+    conflicts = conflicts.filter(conflict => conflict.scheduleID !== requestData.scheduleID);
+
+    if (conflicts.length > 0) {
+        res.status(409).send('Conflicts found');
+        return;
+    };
+
+    const request = {
+        requestID: globals.randomString(10),
+        facultyID: requestData.facultyID,
+        original: {
+            facilityID: schedule.facilityID,
+            day: schedule.day,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime
+        },
+        request: {
+            facilityID: requestData.facilityID,
+            day: requestData.day,
+            startTime: requestData.startTime,
+            endTime: requestData.endTime
+        },
+        status: 'pending',
+        requestReason: requestData.reason,
+        rejectReason: null,
+        requestDate: new Date().toISOString(),
+        program: schedule.courseCode.split('-')[0] === 'IT' ? 'bsit' : 'bscpe',
+        courseCode: schedule.courseCode,
+        scheduleID: requestData.scheduleID
+    };
+
+    // Insert request
+    await new Promise((resolve, reject) => {
+        connection.query(`
+            INSERT INTO requests (
+                requestID,
+                facultyID,
+                original_facilityID,
+                original_day,
+                original_startTime,
+                original_endTime,
+                request_facilityID,
+                request_day,
+                request_startTime,
+                request_endTime,
+                status,
+                requestReason,
+                rejectReason,
+                requestDate,
+                program,
+                courseCode,
+                scheduleID
+            )
+            VALUES (?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?,
+                    ?)`, [
+            request.requestID,
+            request.facultyID,
+            request.original.facilityID,
+            request.original.day,
+            request.original.startTime,
+            request.original.endTime,
+            request.request.facilityID,
+            request.request.day,
+            request.request.startTime,
+            request.request.endTime,
+            request.status,
+            request.requestReason,
+            request.rejectReason,
+            request.requestDate,
+            request.program,
+            request.courseCode,
+            request.scheduleID
+        ], (err, result) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                resolve();
+            };
+        });
+    });
+
+    res.send('Request sent');
+    console.log(globals.rooms);
+    for (const ws of globals.rooms['notifications_admin']) {
+        ws.send("refresh");
+    };
+    for (const ws of globals.rooms['notifications_user']) {
+        ws.send("refresh");
+    };
+});
+
+user.post('/requests/', async (req, res) => {
+    const data = {
+        token: req.body['token'],
+        identifier: req.body['identifier'],
+        [req.body['identifier']]: req.body[req.body['identifier']]
+    };
+
+    if (!data.token) {
+        res.status(400).send('Token is required');
+        return;
+    };
+    if (!data.identifier) {
+        res.status(400).send('Identifier is required');
+        return;
+    };
+
+    // if identifier is studentID, change it to the student's section
+    if (data.identifier === 'studentID') {
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT section FROM students WHERE studentID = ?', [data.studentID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    data.studentID = undefined;
+                    data.section = results[0].section;
+                    data.identifier = 'section';
+                    resolve();
+                };
+            });
+        });
+    };
+
+    // Check if token exists in faculties
+    let found = false;
+    let where = '';
+    let user = null;
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM faculties WHERE token = ?', [data.token], (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                if (results.length > 0) {
+                    found = true;
+                    where = 'faculties';
+                    user = results[0];
+                };
+                resolve();
+            };
+        });
+    });
+    // if user is not found, reject
+    if (!found) {
+        res.status(401).send('Unauthorized');
+        return;
+    };
+
+    // Get requests
+    const requests = [];
+    await new Promise((resolve, reject) => {
+        connection.query('SELECT * FROM requests WHERE facultyID = ?', [data[data.identifier]], async (err, results) => {
+            if (err) {
+                res.status(500).send('Internal Server Error');
+                reject(err);
+            } else {
+                for (const request of results) {
+                    requests.push(request);
+                };
+                resolve();
+            };
+        });
+    });
+
+    const toReturn = [];
+
+    for (const request of requests) {
+        const requestToReturn = {
+            requestID: request.requestID,
+            facultyID: request.facultyID,
+            facultyName: '',
+            original: {
+                facilityID: request.original_facilityID,
+                facilityName: '',
+                day: request.original_day,
+                startTime: request.original_startTime,
+                endTime: request.original_endTime
+            },
+            request: {
+                facilityID: request.request_facilityID,
+                facilityName: '',
+                day: request.request_day,
+                startTime: request.request_startTime,
+                endTime: request.request_endTime
+            },
+            status: request.status,
+            requestReason: request.requestReason,
+            rejectReason: request.rejectReason,
+            requestDate: request.requestDate,
+            program: request.program,
+            courseCode: request.courseCode,
+            scheduleID: request.scheduleID
+        };
+
+        // Get faculty name
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT firstName, lastName FROM faculties WHERE facultyID = ?', [request.facultyID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    requestToReturn.facultyName = `${results[0].firstName} ${results[0].lastName}`;
+                    resolve();
+                };
+            });
+        });
+
+        // Get facility name
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [request.original_facilityID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    requestToReturn.original.facilityName = results[0].name;
+                    resolve();
+                };
+            });
+        });
+        await new Promise((resolve, reject) => {
+            connection.query('SELECT name FROM facilities WHERE facilityID = ?', [request.request_facilityID], (err, results) => {
+                if (err) {
+                    res.status(500).send('Internal Server Error');
+                    reject(err);
+                } else {
+                    requestToReturn.request.facilityName = results[0].name;
+                    resolve();
+                };
+            });
+        });
+
+        toReturn.push(requestToReturn);
+    };
+
+    // Sort requests by requestDate
+    toReturn.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+
+    res.send(toReturn);
+});
 module.exports = user;

@@ -3,16 +3,16 @@ Imports Svg
 Imports System.IO
 Imports System.Net
 
-Public Class BSCpE_SetupData
+Public Class Facility_SetupData
     Inherits BaseForm
 
     Private FormPanel As New Transparent.FlowLayoutPanel
 
-    Protected Sub BSCpE_SetupData_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Me.Name = "Setup BSCpE Data"
+    Protected Sub Facility_SetupData_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.Name = "Setup Facility Data"
 
         Dim Title As New Label With {
-            .Text = "Import BSCpE Data",
+            .Text = "Import Facility Data",
             .AutoSize = True,
             .MinimumSize = New Size(Me.Width - Globals.Unit(4), Globals.Unit(2)),
             .MaximumSize = New Size(Me.Width - Globals.Unit(4), Globals.Unit(2)),
@@ -38,32 +38,17 @@ Public Class BSCpE_SetupData
         )
         Me.Contents.Controls.Add(Me.FormPanel)
 
-        Dim CoursesInput As New FileInputPanel With {
-            .Label = "Courses",
-            .Description = "Upload .csv file of courses.",
-            .Format = "courseCode, description, units, yearLevel"
+        Dim FacilitiesInput As New FileInputPanel With {
+            .Label = "Facilities",
+            .Description = "Upload .csv file of facilities.",
+            .Format = "facilityID, name, description"
         }
-        Me.FormPanel.Controls.Add(CoursesInput)
-
-        Dim FacultiesInput As New FileInputPanel With {
-            .Label = "Faculties",
-            .Description = "Upload .csv file of faculties.",
-            .Format = "facultiesID, firstName, lastName, email"
-        }
-        Me.FormPanel.Controls.Add(FacultiesInput)
-
-        Dim StudentsInput As New FileInputPanel With {
-            .Label = "Students",
-            .Description = "Upload .csv file of students.",
-            .Format = "studentID, firstName, lastName, email, section",
-            .Name = "StudentsInput"
-        }
-        Me.FormPanel.Controls.Add(StudentsInput)
+        Me.FormPanel.Controls.Add(FacilitiesInput)
 
         Dim i As Integer = 0
         For Each Control As Control In Me.FormPanel.Controls
-            Control.MinimumSize = New Size((Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth) * 0.5 - Globals.Unit(1), 0)
-            Control.MaximumSize = New Size((Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth) * 0.5 - Globals.Unit(1), 0)
+            Control.MinimumSize = New Size(Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth, 0)
+            Control.MaximumSize = New Size(Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth, 0)
 
             If i Mod 2 = 0 Then
                 Control.Margin = New Padding(0, 0, 0, 0)
@@ -80,14 +65,6 @@ Public Class BSCpE_SetupData
             End If
             i = i + 1
         Next
-        StudentsInput.MinimumSize = New Size(
-            (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
-            0
-        )
-        StudentsInput.MaximumSize = New Size(
-            (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
-            0
-        )
 
         Dim SubmitButton As New BaseButton With {
             .Name = "Submit",
@@ -99,73 +76,30 @@ Public Class BSCpE_SetupData
         )
         AddHandler SubmitButton.Click, Sub()
                                            Dim Data As New Dictionary(Of String, String)
-                                           If CoursesInput.FilePath = "" Then
+                                           If FacilitiesInput.FilePath = "" Then
                                                Dim Modal As New BaseModal With {
                                                     .Title = "Error",
                                                     .Message = "Please upload a .csv file for courses."
                                                 }
                                                Modal.ShowDialog()
-                                               CoursesInput.Alert()
+                                               FacilitiesInput.Alert()
                                                Exit Sub
                                            Else
                                                Try
-                                                   Data.Add("courses", File.ReadAllText(CoursesInput.FilePath))
+                                                   Data.Add("facilities", File.ReadAllText(FacilitiesInput.FilePath))
                                                Catch ex As Exception
                                                    Dim Modal As New BaseModal With {
                                                         .Title = "Error",
                                                         .Message = ex.Message
                                                     }
                                                    Modal.ShowDialog()
-                                                   CoursesInput.Alert()
+                                                   FacilitiesInput.Alert()
                                                    Exit Sub
                                                End Try
                                            End If
-                                           If FacultiesInput.FilePath = "" Then
-                                               Dim Modal As New BaseModal With {
-                                                    .Title = "Error",
-                                                    .Message = "Please upload a .csv file for faculties."
-                                                }
-                                               Modal.ShowDialog()
-                                               FacultiesInput.Alert()
-                                               Exit Sub
-                                           Else
-                                               Try
-                                                   Data.Add("faculties", File.ReadAllText(FacultiesInput.FilePath))
-                                               Catch ex As Exception
-                                                   Dim Modal As New BaseModal With {
-                                                        .Title = "Error",
-                                                        .Message = ex.Message
-                                                    }
-                                                   Modal.ShowDialog()
-                                                   FacultiesInput.Alert()
-                                                   Exit Sub
-                                               End Try
-                                           End If
-                                           If StudentsInput.FilePath = "" Then
-                                               Dim Modal As New BaseModal With {
-                                                    .Title = "Error",
-                                                    .Message = "Please upload a .csv file for students."
-                                                }
-                                               Modal.ShowDialog()
-                                               StudentsInput.Alert()
-                                               Exit Sub
-                                           Else
-                                               Try
-                                                   Data.Add("students", File.ReadAllText(StudentsInput.FilePath))
-                                               Catch ex As Exception
-                                                   Dim Modal As New BaseModal With {
-                                                           .Title = "Error",
-                                                           .Message = ex.Message
-                                                        }
-                                                   Modal.ShowDialog()
-                                                   StudentsInput.Alert()
-                                                   Exit Sub
-                                               End Try
-                                           End If
-                                           Data.Add("program", "bscpe")
                                            Try
-                                               Dim response As String = Globals.API("POST", "setup/program", Globals.DictionaryToJSON(Data))
-                                               Me.GoToForm(New Facility_SetupData)
+                                               Dim response As String = Globals.API("POST", "setup/facilities", Globals.DictionaryToJSON(Data))
+                                               Me.GoToForm(New Login)
                                            Catch ex As WebException
                                                Dim rep As HttpWebResponse = ex.Response
                                                Using rdr As New StreamReader(rep.GetResponseStream())
@@ -183,7 +117,7 @@ Public Class BSCpE_SetupData
         Me.Size = Globals.FormSize
     End Sub
 
-    Protected Sub BSCpE_SetupData_Resize(sender As Object, e As EventArgs) Handles Me.Resize
+    Protected Sub Facility_SetupData_Resize(sender As Object, e As EventArgs) Handles Me.Resize
         If Me.Loaded Then
             Me.Contents.Controls("Title").Location = New Point(
                 CInt(Me.Width * 0.5 - Me.Contents.Controls("Title").Width * 0.5),
@@ -199,22 +133,14 @@ Public Class BSCpE_SetupData
             )
             For Each Control As Control In Me.FormPanel.Controls
                 Control.MinimumSize = New Size(
-                    (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth) * 0.5 - Globals.Unit(1),
+                    Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth,
                     Control.MaximumSize.Height
                 )
                 Control.MaximumSize = New Size(
-                    (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth) * 0.5 - Globals.Unit(1),
+                    Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth,
                     Control.MaximumSize.Height
                 )
             Next
-            Me.FormPanel.Controls("StudentsInput").MinimumSize = New Size(
-                (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
-                0
-            )
-            Me.FormPanel.Controls("StudentsInput").MaximumSize = New Size(
-                (Me.FormPanel.Width - SystemInformation.VerticalScrollBarWidth),
-                0
-            )
             Me.Contents.Controls("Submit").Location = New Point(
                 Me.FormPanel.Right - Me.Contents.Controls("Submit").Width,
                 Me.FormPanel.Bottom + Globals.Unit(1)

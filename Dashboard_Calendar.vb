@@ -671,6 +671,7 @@ Public Class Dashboard_Calendar
     Private Schedules As New List(Of SchedulePanel)
 
     Protected Sub Dashboard_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        BackendSocket.Connect("calendar_admin")
         Me.Name = "Dashboard"
 
         Me.SidePanel = New FlowLayoutPanel With {
@@ -705,6 +706,7 @@ Public Class Dashboard_Calendar
             .Padding = New Padding(0)
         }
         AddHandler CreateIcon.Click, Sub()
+                                         BackendSocket.Close()
                                          Me.GoToForm(New Dashboard_Create)
                                      End Sub
         Me.SidePanel.Controls.Add(CreateIcon)
@@ -716,6 +718,10 @@ Public Class Dashboard_Calendar
             .Margin = New Padding(0),
             .Padding = New Padding(0)
         }
+        AddHandler NotificationIcon.Click, Sub()
+                                               BackendSocket.Close()
+                                               Me.GoToForm(New Dashboard_Notification)
+                                           End Sub
         Me.SidePanel.Controls.Add(NotificationIcon)
 
         Dim LogoutIcon As New PictureBox With {
@@ -742,6 +748,7 @@ Public Class Dashboard_Calendar
         AddHandler LogoutIcon.Click, Sub()
                                          Globals.TOKEN = ""
                                          Globals.PROGRAM = ""
+                                         BackendSocket.Close()
                                          Me.GoToForm(New Login)
                                      End Sub
         Me.SidePanel.Controls.Add(LogoutIcon)
@@ -778,6 +785,12 @@ Public Class Dashboard_Calendar
                                            ScheduleSelection.Size = New Size(Me.Calendar.Width, Globals.Unit(1))
                                        End Sub
         Me.Calendar.Controls.Add(ScheduleSelection)
+
+        AddHandler BackendSocket.OnMessage, Sub(data As String)
+                                                ScheduleSelection.SelectedIndex = ScheduleSelection.SelectedIndex - 1
+                                                ScheduleSelection.SelectedIndex = ScheduleSelection.SelectedIndex + 1
+                                            End Sub
+
         Dim PopupPanel As Panel = Me.Calendar.Controls.Find("PopUpPanel", True).FirstOrDefault()
         If PopupPanel IsNot Nothing Then
             Me.Calendar.Controls.Remove(PopupPanel)
@@ -918,32 +931,43 @@ Public Class Dashboard_Calendar
 
         Dim Identifiers = New Dictionary(Of String, Dictionary(Of String, String))
 
-        Invoke(Sub()
-                   Try
-                       Dim response As String = Globals.API("GET", "admin/dashboard/program/" & Globals.PROGRAM & "/calendars/", Nothing)
-                       Dim data = Globals.JSONToDictionary(response, True)
-                       Dim Selections As New List(Of String)
-                       For Each item In data.Values
-                           Selections.Add(item("name"))
-                           Identifiers.Add(item("name"), New Dictionary(Of String, String) From {
-                                           {"key", item("key")},
-                                           {"identifier", item("identifier")},
-                                           {"name", item("name")}
-                           })
+        Dim getCalendars = Sub()
+                               Try
+                                   Dim response As String = Globals.API("GET", "admin/dashboard/program/" & Globals.PROGRAM & "/calendars/", Nothing)
+                                   Dim data = Globals.JSONToDictionary(response, True)
+                                   Dim Selections As New List(Of String)
+                                   For Each item In data.Values
+                                       Selections.Add(item("name"))
+                                       Identifiers.Add(item("name"), New Dictionary(Of String, String) From {
+                                                      {"key", item("key")},
+                                                      {"identifier", item("identifier")},
+                                                      {"name", item("name")}
+                                      })
 
-                       Next
-                       ScheduleSelection.Items = Selections
-                   Catch ex As WebException
-                       Dim rep As HttpWebResponse = ex.Response
-                       Using rdr As New StreamReader(rep.GetResponseStream())
-                           Dim Modal As New BaseModal With {
-                            .Title = "Error",
-                            .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
-                          }
-                           Modal.ShowDialog()
-                       End Using
-                   End Try
-               End Sub)
+                                   Next
+                                   ScheduleSelection.Items = Selections
+                               Catch ex As WebException
+                                   Dim rep As HttpWebResponse = ex.Response
+                                   Using rdr As New StreamReader(rep.GetResponseStream())
+                                       Dim Modal As New BaseModal With {
+                                       .Title = "Error",
+                                       .Message = rep.StatusCode & ": " & rdr.ReadToEnd()
+                                     }
+                                       Modal.ShowDialog()
+                                   End Using
+                               End Try
+                           End Sub
+        getCalendars()
+
+        'AddHandler BackendSocket.OnMessage, Sub(message)
+        '                                        MsgBox(message)
+        '                                        If message = "refresh" Then
+        '                                            Dim calendarPreviousIndex As Integer = ScheduleSelection.SelectedIndex
+        '                                            ScheduleSelection.Items.Clear()
+        '                                            getCalendars()
+        '                                            ScheduleSelection.SelectedIndex = calendarPreviousIndex
+        '                                        End If
+        '                                    End Sub
 
         Dim DisplaySchedules = Sub()
                                    'Check if ScheduleSelection is empty
